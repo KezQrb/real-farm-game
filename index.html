@@ -275,12 +275,6 @@
                 <div class="bg-yellow-300 px-3 py-2 rounded-full font-bold text-orange-700 text-sm">
                     🐣 <span id="chicks">0</span>
                 </div>
-                <div class="bg-green-400 px-3 py-2 rounded-full font-bold text-white text-sm">
-                    🍽️ <span id="cooked-meals">0</span>
-                </div>
-                <div class="bg-red-500 px-3 py-2 rounded-full font-bold text-white text-sm">
-                    ⚡ <span id="avatar-energy">100</span>%
-                </div>
                 <div class="bg-purple-500 px-3 py-2 rounded-full font-bold text-white text-sm">
                     ⭐ <span id="level">1</span>
                 </div>
@@ -870,64 +864,6 @@
                 </div>
             </div>
 
-            <!-- Stove -->
-            <div class="bg-red-100 rounded-lg shadow-lg p-6">
-                <h3 class="text-xl font-bold text-red-700 mb-4 text-center">🔥 Fogão a Lenha</h3>
-                <div class="bg-white rounded-lg p-4 mb-4">
-                    <h4 class="text-lg font-bold text-red-600 mb-3 text-center">📋 Receita de Refeição</h4>
-                    <div class="space-y-2 text-center">
-                        <div class="flex items-center justify-center space-x-2">
-                            <span class="text-xl">🥔</span>
-                            <span class="font-bold text-sm">1 Batata</span>
-                        </div>
-                        <div class="flex items-center justify-center space-x-2">
-                            <span class="text-xl">🥚</span>
-                            <span class="font-bold text-sm">1 Ovo</span>
-                        </div>
-                        <div class="flex items-center justify-center space-x-2">
-                            <span class="text-xl">🥬</span>
-                            <span class="font-bold text-sm">1 Alface</span>
-                        </div>
-                        <div class="mt-3">
-                            <button id="cook-meal" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-bold transition-colors text-sm">
-                                🍽️ Cozinhar Refeição
-                            </button>
-                        </div>
-                        <div class="mt-2">
-                            <button id="eat-meal" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-bold transition-colors text-sm">
-                                😋 Comer Refeição (+100% energia)
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Stove -->
-                <div class="bg-red-200 rounded-lg p-4">
-                    <h4 class="text-lg font-bold text-red-600 mb-3 text-center">🔥 Fogão</h4>
-                    <div class="bg-gray-800 rounded-lg p-4 h-32 relative border-4 border-gray-900">
-                        <!-- Fogão -->
-                        <div class="absolute bottom-2 left-2 right-2 h-16 bg-gray-700 rounded border-2 border-gray-600"></div>
-                        <!-- Chaminé -->
-                        <div class="absolute -top-2 right-4 w-4 h-6 bg-gray-900 rounded-t"></div>
-                        <!-- Fogo/Status -->
-                        <div id="stove-status" class="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-2xl">❄️</div>
-                        <!-- Lenha no fogão -->
-                        <div id="stove-wood" class="absolute bottom-6 left-4 right-4 flex justify-center space-x-1">
-                            <!-- Lenhas aparecerão aqui -->
-                        </div>
-                        
-                        <div class="absolute top-1 left-2 right-2 text-center">
-                            <button id="add-wood-stove" class="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs font-bold transition-colors mb-1">
-                                🪵 Adicionar Lenha (2 necessárias)
-                            </button>
-                            <div class="bg-white rounded-full px-2 py-1 text-xs font-bold text-red-700">
-                                <span id="cooking-timer">Fogão apagado</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <!-- Feed Maker -->
             <div class="bg-orange-100 rounded-lg shadow-lg p-6">
                 <h3 class="text-xl font-bold text-orange-700 mb-4 text-center">🏭 Fábrica de Ração</h3>
@@ -1386,14 +1322,6 @@
                 this.customerOrders = []; // Pedidos dos clientes
                 this.horseManureAvailable = false; // Esterco do cavalo disponível
                 
-                // Sistema de energia do avatar
-                this.avatarEnergy = 100; // Energia do avatar (0-100)
-                this.cookedMeals = 0; // Refeições cozinhadas
-                this.stoveWood = 0; // Lenha no fogão
-                this.stoveLit = false; // Fogão aceso
-                this.isCooking = false; // Status de cozimento
-                this.cookingTimer = null; // Timer de cozimento
-                
                 // Sistema de desbloqueios e compras
                 this.unlockedPlots = 8; // Começar com 8 canteiros
                 this.maxPlots = 40; // Máximo de 40 canteiros
@@ -1671,33 +1599,6 @@
                 }, 1000);
             }
             
-            reduceAvatarEnergy(amount = 5) {
-                this.avatarEnergy = Math.max(0, this.avatarEnergy - amount);
-                
-                // Atualizar cor do indicador baseado na energia
-                const energyElement = document.getElementById('avatar-energy');
-                const energyContainer = energyElement.parentElement;
-                
-                if (this.avatarEnergy > 70) {
-                    energyContainer.className = 'bg-green-500 px-3 py-2 rounded-full font-bold text-white text-sm';
-                } else if (this.avatarEnergy > 30) {
-                    energyContainer.className = 'bg-yellow-500 px-3 py-2 rounded-full font-bold text-white text-sm';
-                } else {
-                    energyContainer.className = 'bg-red-500 px-3 py-2 rounded-full font-bold text-white text-sm';
-                }
-                
-                // Mostrar mensagem se energia baixa
-                if (this.avatarEnergy <= 20 && this.avatarEnergy > 0) {
-                    this.showMessage('⚡ Energia baixa! Cozinhe uma refeição para recuperar!', 'error');
-                    this.changeAvatarExpression('😴');
-                } else if (this.avatarEnergy === 0) {
-                    this.showMessage('😴 Sem energia! Precisa comer para continuar!', 'error');
-                    this.changeAvatarExpression('😵');
-                }
-                
-                this.updateUI();
-            }
-            
             changeAvatarExpression(expression) {
                 const avatar = document.getElementById('avatar');
                 const originalExpression = '👩‍🌾';
@@ -1920,158 +1821,6 @@
                 }
             }
             
-            addWoodToStove() {
-                if (this.wood < 1) {
-                    this.showMessage('Precisa de lenha! Corte a árvore primeiro! 🪵', 'error');
-                    this.changeAvatarExpression('😟');
-                    return;
-                }
-                
-                if (this.stoveWood >= 2) {
-                    this.showMessage('Fogão já tem lenha suficiente! 🔥', 'error');
-                    this.changeAvatarExpression('🤔');
-                    return;
-                }
-                
-                this.wood -= 1;
-                this.stoveWood += 1;
-                this.reduceAvatarEnergy(3); // Reduzir energia por atividade
-                
-                if (this.stoveWood >= 2 && !this.stoveLit) {
-                    this.stoveLit = true;
-                    this.playSound('baking');
-                    this.showMessage('🔥 Fogão aceso! Agora pode cozinhar refeições!', 'success');
-                    this.changeAvatarExpression('😊');
-                    this.celebrateAvatar();
-                } else {
-                    this.showMessage(`🪵 Lenha adicionada! (${this.stoveWood}/2)`, 'success');
-                    this.changeAvatarExpression('😊');
-                }
-                
-                this.updateStoveDisplay();
-                this.updateUI();
-            }
-            
-            cookMeal() {
-                // Verificar se tem os ingredientes necessários
-                if (this.harvestInventory.potato < 1) {
-                    this.showMessage('Precisa de 1 batata para cozinhar! 🥔', 'error');
-                    this.changeAvatarExpression('😔');
-                    return;
-                }
-                
-                if (this.eggs < 1) {
-                    this.showMessage('Precisa de 1 ovo para cozinhar! 🥚', 'error');
-                    this.changeAvatarExpression('😔');
-                    return;
-                }
-                
-                if (this.harvestInventory.lettuce < 1) {
-                    this.showMessage('Precisa de 1 alface para cozinhar! 🥬', 'error');
-                    this.changeAvatarExpression('😔');
-                    return;
-                }
-                
-                if (!this.stoveLit) {
-                    this.showMessage('Fogão precisa estar aceso! Adicione 2 lenhas! 🔥', 'error');
-                    this.changeAvatarExpression('😟');
-                    return;
-                }
-                
-                if (this.isCooking) {
-                    this.showMessage('Fogão ocupado! Aguarde a refeição ficar pronta! 🔥', 'error');
-                    this.changeAvatarExpression('⏰');
-                    return;
-                }
-                
-                // Consumir ingredientes
-                this.harvestInventory.potato -= 1;
-                this.eggs -= 1;
-                this.harvestInventory.lettuce -= 1;
-                this.reduceAvatarEnergy(8); // Reduzir energia por cozinhar
-                
-                // Iniciar processo de cozinhar
-                this.isCooking = true;
-                this.playSound('baking');
-                this.showMessage('🍽️ Ingredientes no fogão! Cozinhando refeição...', 'success');
-                this.changeAvatarExpression('😊');
-                this.celebrateAvatar();
-                
-                // Refeição fica pronta em 25 segundos
-                setTimeout(() => {
-                    this.cookedMeals += 1;
-                    this.isCooking = false;
-                    // Consumir lenha do fogão após cozinhar
-                    this.stoveWood = 0;
-                    this.stoveLit = false;
-                    this.playSound('oven');
-                    this.showMessage('🍽️ Refeição pronta! Fogão apagou, precisa de mais lenha.', 'success');
-                    this.changeAvatarExpression('😋');
-                    this.celebrateAvatar();
-                    this.updateStoveDisplay();
-                    this.updateUI();
-                    this.updateHarvestShop();
-                }, 25000);
-                
-                this.updateStoveDisplay();
-                this.updateUI();
-                this.updateHarvestShop();
-            }
-            
-            eatMeal() {
-                if (this.cookedMeals < 1) {
-                    this.showMessage('Precisa cozinhar uma refeição primeiro! 🍽️', 'error');
-                    this.changeAvatarExpression('😔');
-                    return;
-                }
-                
-                this.cookedMeals -= 1;
-                this.avatarEnergy = 100; // Restaurar energia completamente
-                
-                this.playSound('harvest');
-                this.showMessage('😋 Refeição deliciosa! Energia restaurada para 100%!', 'success');
-                this.changeAvatarExpression('😋');
-                this.celebrateAvatar();
-                
-                // Atualizar cor do indicador para verde
-                const energyContainer = document.getElementById('avatar-energy').parentElement;
-                energyContainer.className = 'bg-green-500 px-3 py-2 rounded-full font-bold text-white text-sm';
-                
-                this.updateUI();
-            }
-            
-            updateStoveDisplay() {
-                const stoveStatus = document.getElementById('stove-status');
-                const stoveWoodContainer = document.getElementById('stove-wood');
-                const cookingTimer = document.getElementById('cooking-timer');
-                
-                // Limpar lenhas visuais
-                stoveWoodContainer.innerHTML = '';
-                
-                // Mostrar lenhas no fogão
-                for (let i = 0; i < this.stoveWood; i++) {
-                    const wood = document.createElement('div');
-                    wood.textContent = '🪵';
-                    wood.className = 'text-lg';
-                    stoveWoodContainer.appendChild(wood);
-                }
-                
-                // Status do fogão
-                if (this.isCooking) {
-                    stoveStatus.textContent = '🔥🍽️';
-                    cookingTimer.textContent = 'Cozinhando...';
-                    cookingTimer.className = 'text-orange-600 font-bold';
-                } else if (this.stoveLit) {
-                    stoveStatus.textContent = '🔥';
-                    cookingTimer.textContent = 'Fogão aceso';
-                    cookingTimer.className = 'text-green-600 font-bold';
-                } else {
-                    stoveStatus.textContent = '❄️';
-                    cookingTimer.textContent = 'Fogão apagado';
-                    cookingTimer.className = 'text-red-600 font-bold';
-                }
-            }
-            
             playSound(type) {
                 // Criar contexto de áudio para efeitos sonoros
                 const audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -2226,7 +1975,6 @@
                 this.horseEnergy = 0;
                 this.manureAvailable = true; // Esterco das vacas disponível no novo dia
                 this.horseManureAvailable = true; // Esterco do cavalo disponível no novo dia
-                this.avatarEnergy = 100; // Restaurar energia do avatar no novo dia
                 this.dayCount++;
                 
                 // Verificar se compostagem está pronta
@@ -3521,19 +3269,6 @@
                     this.deliverOrders();
                 });
                 
-                // Fogão a lenha
-                document.getElementById('add-wood-stove').addEventListener('click', () => {
-                    this.addWoodToStove();
-                });
-                
-                document.getElementById('cook-meal').addEventListener('click', () => {
-                    this.cookMeal();
-                });
-                
-                document.getElementById('eat-meal').addEventListener('click', () => {
-                    this.eatMeal();
-                });
-                
                 // Expansão de canteiros
                 document.getElementById('expand-plots').addEventListener('click', () => {
                     this.expandPlots();
@@ -4228,14 +3963,7 @@
                     return;
                 }
                 
-                if (this.avatarEnergy <= 0) {
-                    this.showMessage('😴 Sem energia! Coma uma refeição para continuar!', 'error');
-                    this.changeAvatarExpression('😵');
-                    return;
-                }
-                
                 this.fertilizer -= 1;
-                this.reduceAvatarEnergy(3); // Reduzir energia por adubar
                 plot.state = 'fertilized';
                 plot.element.className = 'farm-plot w-20 h-20 fertilized rounded-lg flex items-center justify-center text-2xl font-bold shadow-md cursor-pointer';
                 plot.element.innerHTML = '🍂';
@@ -4257,14 +3985,7 @@
                     return;
                 }
                 
-                if (this.avatarEnergy <= 0) {
-                    this.showMessage('😴 Sem energia! Coma uma refeição para continuar!', 'error');
-                    this.changeAvatarExpression('😵');
-                    return;
-                }
-                
                 this.coins -= seedInfo.cost;
-                this.reduceAvatarEnergy(4); // Reduzir energia por plantar
                 plot.state = 'needs-water';
                 plot.seedType = this.selectedSeed;
                 plot.element.className = 'farm-plot w-20 h-20 needs-water rounded-lg flex items-center justify-center text-2xl font-bold shadow-md cursor-pointer';
@@ -4291,15 +4012,7 @@
                         this.changeAvatarExpression('😟');
                         return;
                     }
-                    
-                    if (this.avatarEnergy <= 0) {
-                        this.showMessage('😴 Sem energia! Coma uma refeição para continuar!', 'error');
-                        this.changeAvatarExpression('😵');
-                        return;
-                    }
-                    
                     this.water -= seedInfo.waterNeeded;
-                    this.reduceAvatarEnergy(2); // Reduzir energia por regar
                 }
                 
                 plot.state = 'growing';
@@ -4367,15 +4080,8 @@
                 const seedInfo = this.seedTypes[plot.seedType];
                 const cropType = plot.seedType;
                 
-                if (this.avatarEnergy <= 0) {
-                    this.showMessage('😴 Sem energia! Coma uma refeição para continuar!', 'error');
-                    this.changeAvatarExpression('😵');
-                    return;
-                }
-                
                 // Adicionar ao inventário de colheitas - todas as plantações dão 2 frutos
                 this.harvestInventory[cropType] += 2;
-                this.reduceAvatarEnergy(5); // Reduzir energia por colher
                 
                 plot.state = 'empty';
                 plot.seedType = null;
@@ -4568,8 +4274,6 @@
                 document.getElementById('flour').textContent = this.flour;
                 document.getElementById('raw-chicken').textContent = this.rawChicken;
                 document.getElementById('chicks').textContent = this.ownedAnimals.chicks;
-                document.getElementById('cooked-meals').textContent = this.cookedMeals;
-                document.getElementById('avatar-energy').textContent = this.avatarEnergy;
                 document.getElementById('level').textContent = this.level;
                 
                 // Atualizar contadores de animais
@@ -4601,5 +4305,5 @@
         // Iniciar o jogo
         const game = new FarmGame();
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'967f79682748007b',t:'MTc1Mzk4OTg0OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'967fcaf2e4780097',t:'MTc1Mzk5MzE4OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
