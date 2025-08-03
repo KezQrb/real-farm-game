@@ -153,7 +153,9 @@
             border-radius: 15px;
             padding: 20px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            min-width: 400px;
+            width: 450px;
+            max-width: 450px;
+            min-width: 450px;
             margin: 0 auto;
         }
 
@@ -635,6 +637,25 @@
             animation: pulse 1s infinite;
         }
 
+        .cow-item.sick {
+            background: #FF6B6B;
+            border-color: #FF4757;
+            animation: sickPulse 1.5s infinite;
+        }
+
+        @keyframes sickPulse {
+            0%, 100% { 
+                opacity: 1; 
+                transform: scale(1);
+                background: #FF6B6B;
+            }
+            50% { 
+                opacity: 0.7; 
+                transform: scale(0.95);
+                background: #FF4757;
+            }
+        }
+
         .cow-emoji {
             font-size: 2rem;
             display: block;
@@ -809,7 +830,7 @@
 
 
 
-            <div class="animals-area" id="horse-stable" style="display: none; max-width: 350px;">
+            <div class="animals-area" id="horse-stable" style="display: none;">
                 <h3>🐴 Baia do Duque</h3>
                 <div style="margin-bottom: 10px; text-align: center; font-size: 0.85rem;">
                     <div>🐴 Cavalo: Duque</div>
@@ -1161,6 +1182,7 @@
                 </div>
                 <div class="actions">
                     <button class="action-btn" onclick="restAvatar()" id="rest-btn" style="padding: 8px; font-size: 0.9rem;">💤 Descansar (5 min)</button>
+                    <button class="action-btn" onclick="showFoodMenu()" id="eat-btn" style="padding: 8px; font-size: 0.9rem;">🍽️ Comer</button>
                 </div>
 
             </div>
@@ -1181,6 +1203,30 @@
                         <div style="font-size: 1.2rem; margin-bottom: 3px;">🟨</div>
                         <div style="font-size: 0.8rem; color: #2F4F4F; font-weight: bold;">Feno: <span id="hay-celeiro">0</span></div>
                     </div>
+                    <div id="feed-display" style="margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                        <div style="text-align: center; padding: 8px; background: #FFE4E1; border-radius: 8px; border: 2px solid #FF6347;">
+                            <div style="font-size: 1.2rem; margin-bottom: 3px;">🐔</div>
+                            <div style="font-size: 0.8rem; color: #2F4F4F; font-weight: bold;">Ração Galinha: <span id="chicken-feed-celeiro">0</span></div>
+                        </div>
+                        <div style="text-align: center; padding: 8px; background: #F0E68C; border-radius: 8px; border: 2px solid #DAA520;">
+                            <div style="font-size: 1.2rem; margin-bottom: 3px;">🐷</div>
+                            <div style="font-size: 0.8rem; color: #2F4F4F; font-weight: bold;">Ração Porco: <span id="pig-feed-celeiro">0</span></div>
+                        </div>
+                    </div>
+                    <div id="food-display" style="margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                        <div style="text-align: center; padding: 8px; background: #E6FFE6; border-radius: 8px; border: 2px solid #32CD32;">
+                            <div style="font-size: 1.2rem; margin-bottom: 3px;">🥗</div>
+                            <div style="font-size: 0.8rem; color: #2F4F4F; font-weight: bold;">Saladas: <span id="salad-celeiro">0</span></div>
+                        </div>
+                        <div style="text-align: center; padding: 8px; background: #FFF8DC; border-radius: 8px; border: 2px solid #DAA520;">
+                            <div style="font-size: 1.2rem; margin-bottom: 3px;">🍲</div>
+                            <div style="font-size: 0.8rem; color: #2F4F4F; font-weight: bold;">Ensopados: <span id="stew-celeiro">0</span></div>
+                        </div>
+                    </div>
+                    <div id="vaccine-display" style="margin-top: 10px; text-align: center; padding: 8px; background: #FFE4E1; border-radius: 8px; border: 2px solid #FF6347;">
+                        <div style="font-size: 1.2rem; margin-bottom: 3px;">💉</div>
+                        <div style="font-size: 0.8rem; color: #2F4F4F; font-weight: bold;">Vacinas: <span id="vaccines-celeiro">0</span></div>
+                    </div>
                 </div>
             </div>
 
@@ -1199,7 +1245,9 @@
                     <button class="action-btn" onclick="buyDryer()" id="buy-dryer-btn">Comprar Secador de Grama (80 moedas)</button>
                     <button class="action-btn" onclick="buyCompost()" id="buy-compost-btn">Comprar Composteira (100 moedas)</button>
                     <button class="action-btn" onclick="buyMixer()" id="buy-mixer-btn">Comprar Misturador (120 moedas)</button>
+                    <button class="action-btn" onclick="buyChickenCoop()" id="buy-chicken-coop-btn">Comprar Galinheiro (150 moedas)</button>
                     <button class="action-btn" onclick="buyChicken()" id="buy-chicken-btn" style="display: none;">Comprar Galinha (60 moedas)</button>
+                    <button class="action-btn" onclick="buyPigPen()" id="buy-pig-pen-btn">Comprar Chiqueiro (120 moedas)</button>
                     <button class="action-btn" onclick="buyPig()" id="buy-pig-btn" style="display: none;">Comprar Porco (100 moedas)</button>
                     <button class="action-btn" onclick="buyStove()" id="buy-stove-btn">Comprar Fogão a Lenha (150 moedas)</button>
                     <button class="action-btn" onclick="buyPlots()" id="buy-plots-btn">Comprar +8 Canteiros (200 moedas)</button>
@@ -1217,6 +1265,7 @@
                     <button class="action-btn" onclick="buyFishingLake()" id="buy-fishing-lake-btn">Comprar Lago dos Peixes (250 moedas)</button>
                     <button class="action-btn" onclick="buyFishingRod()" id="buy-fishing-rod-btn" style="display: none;">Comprar Vara de Pesca (60 moedas)</button>
                     <button class="action-btn" onclick="buyDogFood()" id="buy-dog-food-btn">Comprar Ração de Cachorro (15 moedas)</button>
+                    <button class="action-btn" onclick="buyVaccine()" id="buy-vaccine-btn">Comprar Vacina Animal (25 moedas)</button>
                     <button class="action-btn" onclick="buyDog()" id="buy-dog-btn">Comprar Mocinha (500 moedas)</button>
                     <button class="action-btn" onclick="buyHorse()" id="buy-horse-btn">Comprar Duque (1000 moedas)</button>
                     <button class="action-btn" onclick="buyOrderPanel()" id="buy-order-panel-btn" style="display: none;">Comprar Painel de Pedidos (500 moedas)</button>
@@ -1262,19 +1311,17 @@
 
             <div class="panel" id="mixer-panel" style="display: none;">
                 <h3>🥣 Misturador de Ração</h3>
-                <div style="margin-bottom: 15px;">
-                    <div>🐔 Ração de Galinha: <span id="chicken-feed">0</span></div>
-                    <div>🐷 Ração de Porco: <span id="pig-feed">0</span></div>
-                </div>
                 <div style="margin-bottom: 15px; font-size: 0.9rem; color: #2F4F4F;">
-                    <strong>Receitas:</strong><br>
+                    <strong>Receitas (10 segundos cada):</strong><br>
                     🐔 Galinha: 2 milhos + 1 trigo = 4 porções<br>
-                    🐷 Porco: 1 tomate + 1 batata + 1 milho + 1 alface = 4 porções
+                    🐷 Porco: 1 tomate + 1 batata + 1 milho + 1 alface = 4 porções<br><br>
+                    <em>📦 Todas as rações são armazenadas no Celeiro</em>
                 </div>
                 <div class="actions">
                     <button class="action-btn" onclick="makeChickenFeed()">Fazer Ração de Galinha</button>
                     <button class="action-btn" onclick="makePigFeed()">Fazer Ração de Porco</button>
                 </div>
+                <div id="mixer-status" style="margin-top: 10px; text-align: center; color: #2F4F4F;"></div>
             </div>
 
 
@@ -1425,6 +1472,8 @@
             hasPasture: false,
             hasSheepPen: false,
             hasMixer: false,
+            hasChickenCoop: false,
+            hasPigPen: false,
             hasCheeseMaker: false,
             hasAxe: false,
             hasWoodCutter: false,
@@ -1477,7 +1526,6 @@
             hasBosque: false,
             branchesCollected: 0,
             logsCollectedCount: 0,
-            treeHitsToday: 0,
             horse: {
                 fed: false,
                 friendship: 0,
@@ -1526,8 +1574,12 @@
             chicks: [],
             pigs: [],
             sheep: [],
-            feed: { chicken: 0, pig: 0 },
+            feed: { chicken: 0, pig: 0 }, // Armazenado no celeiro
             breedingTimer: null,
+            isMakingChickenFeed: false,
+            chickenFeedTimer: null,
+            isMakingPigFeed: false,
+            pigFeedTimer: null,
             lastChickBirth: 0,
             cheeseReady: 0,
             isMakingCheese: false,
@@ -1560,6 +1612,12 @@
                 bread: 0,
                 rawChicken: 0,
                 fish: 0
+            },
+            vaccines: 0, // Vacinas armazenadas no celeiro
+            lastSickAnimal: null, // Controla qual animal ficou doente por último
+            food: {
+                salad: 0,
+                stew: 0
             },
             plots: Array(8).fill(null).map(() => ({
                 fertilized: false,
@@ -1695,8 +1753,16 @@
                 if (gameState.hasSheepPen) document.getElementById('sheep-area').style.display = 'block';
                 if (gameState.hasMixer) {
                     document.getElementById('mixer-panel').style.display = 'block';
+                }
+                if (gameState.hasChickenCoop) {
                     document.getElementById('chickens-area').style.display = 'block';
+                    document.getElementById('buy-chicken-coop-btn').style.display = 'none';
+                    document.getElementById('buy-chicken-btn').style.display = 'block';
+                }
+                if (gameState.hasPigPen) {
                     document.getElementById('pigs-area').style.display = 'block';
+                    document.getElementById('buy-pig-pen-btn').style.display = 'none';
+                    document.getElementById('buy-pig-btn').style.display = 'block';
                 }
                 if (gameState.hasCheeseMaker) document.getElementById('cheese-panel').style.display = 'block';
                 if (gameState.hasWoodCutter) document.getElementById('wood-panel').style.display = 'block';
@@ -1708,8 +1774,8 @@
                 if (gameState.hasStove) document.getElementById('stove-panel').style.display = 'block';
                 if (gameState.hasBosque) document.getElementById('tree-area').style.display = 'block';
                 if (gameState.hasGreenhouse) {
-                    document.getElementById('greenhouse-area').style.display = 'block';
                     createGreenhousePlots();
+                    // Visibilidade será controlada por updateSeasonalVisibility()
                 }
                 if (gameState.hasFishingLake) {
                     document.getElementById('fishing-lake').style.display = 'block';
@@ -1746,6 +1812,7 @@
             }
             
             updateDisplay();
+            updateSeasonalVisibility(); // Aplicar visibilidade inicial
             startGameTimer();
             startWeatherSystem();
             startSeasonCycle();
@@ -2115,10 +2182,60 @@
             gameState.hasMixer = true;
             document.getElementById('mixer-panel').style.display = 'block';
             document.getElementById('buy-mixer-btn').style.display = 'none';
+            updateDisplay();
+            alert('Misturador comprado! Agora você pode fazer ração para os animais.');
+        }
+
+        // Comprar galinheiro
+        function buyChickenCoop() {
+            if (gameState.hasChickenCoop) {
+                alert('Você já tem um galinheiro!');
+                return;
+            }
+            
+            if (!gameState.hasMixer) {
+                alert('Você precisa comprar o misturador primeiro para fazer ração!');
+                return;
+            }
+            
+            if (gameState.money < 150) {
+                alert('Dinheiro insuficiente!');
+                return;
+            }
+            
+            gameState.money -= 150;
+            gameState.hasChickenCoop = true;
+            document.getElementById('chickens-area').style.display = 'block';
+            document.getElementById('buy-chicken-coop-btn').style.display = 'none';
             document.getElementById('buy-chicken-btn').style.display = 'block';
+            updateDisplay();
+            alert('Galinheiro comprado! Agora você pode comprar galinhas.');
+        }
+
+        // Comprar chiqueiro
+        function buyPigPen() {
+            if (gameState.hasPigPen) {
+                alert('Você já tem um chiqueiro!');
+                return;
+            }
+            
+            if (!gameState.hasMixer) {
+                alert('Você precisa comprar o misturador primeiro para fazer ração!');
+                return;
+            }
+            
+            if (gameState.money < 120) {
+                alert('Dinheiro insuficiente!');
+                return;
+            }
+            
+            gameState.money -= 120;
+            gameState.hasPigPen = true;
+            document.getElementById('pigs-area').style.display = 'block';
+            document.getElementById('buy-pig-pen-btn').style.display = 'none';
             document.getElementById('buy-pig-btn').style.display = 'block';
             updateDisplay();
-            alert('Misturador comprado! Agora você pode fazer ração e comprar galinhas e porcos.');
+            alert('Chiqueiro comprado! Agora você pode comprar porcos.');
         }
 
         // Comprar queijaria
@@ -2358,6 +2475,11 @@
                 return;
             }
             
+            if (gameState.currentSeason !== 3) { // Só pode comprar no inverno
+                alert('❄️ A estufa só pode ser comprada durante o inverno! Aguarde a estação fria chegar.');
+                return;
+            }
+            
             if (gameState.money < 800) {
                 alert('Dinheiro insuficiente!');
                 return;
@@ -2369,7 +2491,7 @@
             document.getElementById('buy-greenhouse-btn').style.display = 'none';
             createGreenhousePlots();
             updateDisplay();
-            alert('Estufa comprada! Agora você pode plantar no inverno usando os 12 canteiros protegidos.');
+            alert('❄️ Estufa comprada! Agora você pode plantar no inverno usando os 12 canteiros protegidos. A estufa permanecerá disponível para sempre, mas só funciona no inverno.');
         }
 
         // Comprar lago dos peixes
@@ -2665,11 +2787,11 @@
                 
                 if (timeLeft < 0) {
                     gameState.isCooking = false;
-                    gameState.energy = Math.min(100, gameState.energy + 50);
-                    statusElement.textContent = 'Salada pronta! +50% energia 🥗';
+                    gameState.food.salad += 1;
+                    statusElement.textContent = 'Salada pronta! Armazenada no celeiro 🥗';
                     clearInterval(gameState.cookingTimer);
                     updateDisplay();
-                    alert('Salada cozinhada! Você recuperou 50% de energia!');
+                    alert('Salada cozinhada! +1 salada armazenada no celeiro (recupera 50% energia)');
                 }
             };
             
@@ -2725,11 +2847,11 @@
                 
                 if (timeLeft < 0) {
                     gameState.isCooking = false;
-                    gameState.energy = 100; // Recupera 100% da energia
-                    statusElement.textContent = 'Ensopado pronto! +100% energia 🍲';
+                    gameState.food.stew += 1;
+                    statusElement.textContent = 'Ensopado pronto! Armazenado no celeiro 🍲';
                     clearInterval(gameState.cookingTimer);
                     updateDisplay();
-                    alert('Ensopado cozinhado! Você recuperou toda a energia!');
+                    alert('Ensopado cozinhado! +1 ensopado armazenado no celeiro (recupera 100% energia)');
                 }
             };
             
@@ -3046,6 +3168,19 @@
             }
             
             updateDisplay();
+        }
+
+        // Comprar vacina animal
+        function buyVaccine() {
+            if (gameState.money < 25) {
+                alert('Dinheiro insuficiente!');
+                return;
+            }
+            
+            gameState.money -= 25;
+            gameState.vaccines += 1;
+            updateDisplay();
+            alert('💉 Vacina animal comprada! Armazenada no celeiro. Use para curar animais doentes.');
         }
 
         // Comprar Mocinha
@@ -4152,6 +4287,11 @@
                 return;
             }
             
+            if (gameState.cows.length >= 4) {
+                alert('Máximo de 4 vacas no pasto!');
+                return;
+            }
+            
             if (gameState.money < 80) {
                 alert('Dinheiro insuficiente!');
                 return;
@@ -4167,7 +4307,10 @@
                 feedTimer: null,
                 milkedToday: false,
                 isBeingMilked: false,
-                milkingProgress: 0
+                milkingProgress: 0,
+                sick: false,
+                sickDay: 0,
+                sickTimer: null
             });
             
             createCowElement(cowId);
@@ -4178,8 +4321,8 @@
 
         // Comprar galinha
         function buyChicken() {
-            if (!gameState.hasMixer) {
-                alert('Você precisa comprar o misturador primeiro!');
+            if (!gameState.hasChickenCoop) {
+                alert('Você precisa comprar o galinheiro primeiro!');
                 return;
             }
             
@@ -4202,13 +4345,11 @@
                 collectTimer: null,
                 feedTimer: null,
                 laidEggsToday: false,
-                purchaseDay: gameState.dayCount
+                purchaseDay: gameState.dayCount,
+                sick: false,
+                sickDay: 0,
+                sickTimer: null
             });
-            
-            // Mostrar galinheiro se for a primeira galinha
-            if (gameState.chickens.length === 1) {
-                document.getElementById('chickens-area').style.display = 'block';
-            }
             
             // Iniciar reprodução automática se tiver 2+ galinhas
             if (gameState.chickens.length >= 2 && !gameState.breedingTimer) {
@@ -4348,8 +4489,13 @@
 
         // Comprar porco
         function buyPig() {
-            if (!gameState.hasMixer) {
-                alert('Você precisa comprar o misturador primeiro!');
+            if (!gameState.hasPigPen) {
+                alert('Você precisa comprar o chiqueiro primeiro!');
+                return;
+            }
+            
+            if (gameState.pigs.length >= 4) {
+                alert('Máximo de 4 porcos no chiqueiro!');
                 return;
             }
             
@@ -4367,13 +4513,11 @@
                 collectTimer: null,
                 feedTimer: null,
                 canProduceToday: true,
-                lastProductionDay: 0
+                lastProductionDay: 0,
+                sick: false,
+                sickDay: 0,
+                sickTimer: null
             });
-            
-            // Mostrar chiqueiro se for o primeiro porco
-            if (gameState.pigs.length === 1) {
-                document.getElementById('pigs-area').style.display = 'block';
-            }
             
             createPigElement(pigId);
             updateDisplay();
@@ -4384,6 +4528,11 @@
         function buySheep() {
             if (!gameState.hasSheepPen) {
                 alert('Você precisa comprar o curral de ovelhas primeiro!');
+                return;
+            }
+            
+            if (gameState.sheep.length >= 4) {
+                alert('Máximo de 4 ovelhas no curral!');
                 return;
             }
             
@@ -4403,7 +4552,10 @@
                 canFeedToday: true,
                 lastFeedDay: 0,
                 isBeingSheared: false,
-                shearingProgress: 0
+                shearingProgress: 0,
+                sick: false,
+                sickDay: 0,
+                sickTimer: null
             });
             
             createSheepElement(sheepId);
@@ -4418,6 +4570,11 @@
                 return;
             }
             
+            if (gameState.isMakingChickenFeed) {
+                alert('Já há ração de galinha sendo feita! Aguarde terminar.');
+                return;
+            }
+            
             // Verificar se tem os ingredientes: 2 milhos + 1 trigo
             const cornCount = gameState.inventory[3] || 0; // Milho é índice 3
             const wheatCount = gameState.inventory[4] || 0; // Trigo é índice 4
@@ -4429,16 +4586,44 @@
             
             gameState.inventory[3] -= 2; // Remove 2 milhos
             gameState.inventory[4] -= 1; // Remove 1 trigo
-            gameState.feed.chicken += 4; // Adiciona 4 porções de ração
+            gameState.isMakingChickenFeed = true;
             
+            let timeLeft = 10; // 10 segundos
+            
+            const updateTimer = () => {
+                // Atualizar status no painel do misturador
+                const statusElement = document.getElementById('mixer-status');
+                if (statusElement) {
+                    statusElement.textContent = `Fazendo ração de galinha... ${timeLeft}s`;
+                }
+                timeLeft--;
+                
+                if (timeLeft < 0) {
+                    gameState.isMakingChickenFeed = false;
+                    gameState.feed.chicken += 4; // Adiciona 4 porções de ração ao celeiro
+                    if (statusElement) {
+                        statusElement.textContent = '4 porções de ração de galinha prontas! 🐔';
+                    }
+                    clearInterval(gameState.chickenFeedTimer);
+                    updateDisplay();
+                    alert('Ração de galinha produzida! +4 porções armazenadas no celeiro 📦');
+                }
+            };
+            
+            updateTimer();
+            gameState.chickenFeedTimer = setInterval(updateTimer, 1000);
             updateDisplay();
-            alert('Ração de galinha produzida! +4 porções');
         }
 
         // Fazer ração de porco
         function makePigFeed() {
             if (!gameState.hasMixer) {
                 alert('Você precisa comprar o misturador primeiro!');
+                return;
+            }
+            
+            if (gameState.isMakingPigFeed) {
+                alert('Já há ração de porco sendo feita! Aguarde terminar.');
                 return;
             }
             
@@ -4457,10 +4642,33 @@
             gameState.inventory[0] -= 1; // Remove 1 batata
             gameState.inventory[3] -= 1; // Remove 1 milho
             gameState.inventory[8] -= 1; // Remove 1 alface
-            gameState.feed.pig += 4; // Adiciona 4 porções de ração
+            gameState.isMakingPigFeed = true;
             
+            let timeLeft = 10; // 10 segundos
+            
+            const updateTimer = () => {
+                // Atualizar status no painel do misturador
+                const statusElement = document.getElementById('mixer-status');
+                if (statusElement) {
+                    statusElement.textContent = `Fazendo ração de porco... ${timeLeft}s`;
+                }
+                timeLeft--;
+                
+                if (timeLeft < 0) {
+                    gameState.isMakingPigFeed = false;
+                    gameState.feed.pig += 4; // Adiciona 4 porções de ração ao celeiro
+                    if (statusElement) {
+                        statusElement.textContent = '4 porções de ração de porco prontas! 🐷';
+                    }
+                    clearInterval(gameState.pigFeedTimer);
+                    updateDisplay();
+                    alert('Ração de porco produzida! +4 porções armazenadas no celeiro 📦');
+                }
+            };
+            
+            updateTimer();
+            gameState.pigFeedTimer = setInterval(updateTimer, 1000);
             updateDisplay();
-            alert('Ração de porco produzida! +4 porções');
         }
 
         // Fazer queijo
@@ -4646,16 +4854,9 @@
                 return;
             }
             
-            // Verificar limite diário de 6 batidas
-            if (gameState.treeHitsToday >= 6) {
-                alert('Você já bateu 6 vezes na árvore hoje! Aguarde o próximo dia.');
-                return;
-            }
-            
             gameState.energy = Math.max(0, gameState.energy - 0.5); // Perde 0.5 pontos (0.5% de 100)
-            gameState.logs += 1; // Agora ganha 1 tronco por batida
+            gameState.logs += 1; // Ganha 1 tronco por batida
             gameState.axeUses += 1;
-            gameState.treeHitsToday += 1;
             gameState.logsCollectedCount += 1;
             
             // A cada 3 batidas na árvore, ganha 1 galho
@@ -4663,10 +4864,7 @@
                 gameState.branchesCollected += 1;
                 gameState.compostMaterials.branches += 1;
                 gameState.logsCollectedCount = 0;
-                alert('Machado bateu na árvore! +1 tronco + 1 galho para composteira!');
-                showTutorial('collect-logs');
-            } else {
-                alert(`Machado bateu na árvore! +1 tronco`);
+                alert('🌿 Galho coletado! +1 galho para composteira!');
                 showTutorial('collect-logs');
             }
             
@@ -5503,6 +5701,69 @@
             }, 1000);
         }
 
+        // Mostrar menu de comida
+        function showFoodMenu() {
+            if (gameState.isNight) {
+                alert('O avatar está dormindo! Aguarde o dia amanhecer.');
+                return;
+            }
+            
+            if (gameState.food.salad === 0 && gameState.food.stew === 0) {
+                alert('Você não tem comida no celeiro! Cozinhe saladas ou ensopados no fogão a lenha.');
+                return;
+            }
+            
+            // Criar menu de comida
+            let menuOptions = [];
+            if (gameState.food.salad > 0) {
+                menuOptions.push(`🥗 Salada (${gameState.food.salad} disponível) - Recupera 50% energia`);
+            }
+            if (gameState.food.stew > 0) {
+                menuOptions.push(`🍲 Ensopado (${gameState.food.stew} disponível) - Recupera 100% energia`);
+            }
+            
+            const choice = prompt(`Escolha o que comer:\n\n${menuOptions.map((option, index) => `${index + 1}. ${option}`).join('\n')}\n\n0. Cancelar\n\nDigite o número da opção:`);
+            
+            if (choice === '0' || choice === null) {
+                return;
+            }
+            
+            const choiceNum = parseInt(choice);
+            if (choiceNum === 1 && gameState.food.salad > 0) {
+                eatSalad();
+            } else if ((choiceNum === 2 && gameState.food.stew > 0) || (choiceNum === 1 && gameState.food.salad === 0 && gameState.food.stew > 0)) {
+                eatStew();
+            } else {
+                alert('Opção inválida ou comida não disponível!');
+            }
+        }
+
+        // Comer salada
+        function eatSalad() {
+            if (gameState.food.salad <= 0) {
+                alert('Você não tem saladas no celeiro!');
+                return;
+            }
+            
+            gameState.food.salad--;
+            gameState.energy = Math.min(100, gameState.energy + 50);
+            updateDisplay();
+            alert('🥗 Você comeu uma salada deliciosa! +50% energia recuperada!');
+        }
+
+        // Comer ensopado
+        function eatStew() {
+            if (gameState.food.stew <= 0) {
+                alert('Você não tem ensopados no celeiro!');
+                return;
+            }
+            
+            gameState.food.stew--;
+            gameState.energy = 100; // Recupera 100% da energia
+            updateDisplay();
+            alert('🍲 Você comeu um ensopado nutritivo! Energia totalmente recuperada!');
+        }
+
         // Atualizar status do avatar
         function updateAvatarStatus(status) {
             const avatarStatus = document.getElementById('avatar-status');
@@ -5772,6 +6033,12 @@
         function interactWithCow(cowId) {
             const cow = gameState.cows[cowId];
             
+            // Se a vaca está doente, tentar vacinar
+            if (cow.sick) {
+                vaccinateAnimal('cow', cowId);
+                return;
+            }
+            
             if (cow.milkedToday) {
                 alert('Esta vaca já foi ordenhada hoje! Aguarde o próximo dia.');
                 return;
@@ -5788,6 +6055,12 @@
         function interactWithChicken(chickenId) {
             const chicken = gameState.chickens[chickenId];
             
+            // Se a galinha está doente, tentar vacinar
+            if (chicken.sick) {
+                vaccinateAnimal('chicken', chickenId);
+                return;
+            }
+            
             if (!chicken.fed) {
                 feedChicken(chickenId);
             } else if (chicken.readyToCollect) {
@@ -5799,6 +6072,12 @@
         function interactWithPig(pigId) {
             const pig = gameState.pigs[pigId];
             
+            // Se o porco está doente, tentar vacinar
+            if (pig.sick) {
+                vaccinateAnimal('pig', pigId);
+                return;
+            }
+            
             if (!pig.fed) {
                 feedPig(pigId);
             } else if (pig.readyToCollect) {
@@ -5809,6 +6088,12 @@
         // Interagir com ovelha
         function interactWithSheep(sheepId) {
             const sheep = gameState.sheep[sheepId];
+            
+            // Se a ovelha está doente, tentar vacinar
+            if (sheep.sick) {
+                vaccinateAnimal('sheep', sheepId);
+                return;
+            }
             
             if (!sheep.canFeedToday) {
                 alert('Esta ovelha só pode ser alimentada dia sim, dia não! Aguarde o próximo dia permitido.');
@@ -5830,6 +6115,13 @@
             }
             
             const cow = gameState.cows[cowId];
+            
+            // Animais doentes não podem ser alimentados
+            if (cow.sick) {
+                alert('🤒 Esta vaca está doente! Vacine-a primeiro antes de alimentar.');
+                return;
+            }
+            
             if (cow.fed) return;
             
             if (gameState.energy <= 0) {
@@ -5864,14 +6156,21 @@
         // Alimentar galinha
         function feedChicken(chickenId) {
             const chicken = gameState.chickens[chickenId];
-            if (chicken.fed || chicken.laidEggsToday) return;
             
-            if (gameState.feed.chicken <= 0) {
-                alert('Você não tem ração de galinha! Faça no misturador.');
+            // Animais doentes não podem ser alimentados
+            if (chicken.sick) {
+                alert('🤒 Esta galinha está doente! Vacine-a primeiro antes de alimentar.');
                 return;
             }
             
-            gameState.feed.chicken--;
+            if (chicken.fed || chicken.laidEggsToday) return;
+            
+            if (gameState.feed.chicken <= 0) {
+                alert('Você não tem ração de galinha no celeiro! Faça no misturador.');
+                return;
+            }
+            
+            gameState.feed.chicken--; // Remove do celeiro
             chicken.fed = true;
             chicken.feedTimer = setTimeout(() => {
                 chicken.readyToCollect = true;
@@ -6002,14 +6301,21 @@
         // Alimentar porco
         function feedPig(pigId) {
             const pig = gameState.pigs[pigId];
-            if (pig.fed || !pig.canProduceToday) return;
             
-            if (gameState.feed.pig <= 0) {
-                alert('Você não tem ração de porco! Faça no misturador.');
+            // Animais doentes não podem ser alimentados
+            if (pig.sick) {
+                alert('🤒 Este porco está doente! Vacine-o primeiro antes de alimentar.');
                 return;
             }
             
-            gameState.feed.pig--;
+            if (pig.fed || !pig.canProduceToday) return;
+            
+            if (gameState.feed.pig <= 0) {
+                alert('Você não tem ração de porco no celeiro! Faça no misturador.');
+                return;
+            }
+            
+            gameState.feed.pig--; // Remove do celeiro
             pig.fed = true;
             pig.feedTimer = setTimeout(() => {
                 pig.readyToCollect = true;
@@ -6140,6 +6446,13 @@
         // Alimentar ovelha
         function feedSheep(sheepId) {
             const sheep = gameState.sheep[sheepId];
+            
+            // Animais doentes não podem ser alimentados
+            if (sheep.sick) {
+                alert('🤒 Esta ovelha está doente! Vacine-a primeiro antes de alimentar.');
+                return;
+            }
+            
             if (sheep.fed || !sheep.canFeedToday) return;
             
             if (gameState.hay <= 0) {
@@ -6286,6 +6599,13 @@
             }
             
             const cow = gameState.cows[cowId];
+            
+            // Animais doentes não podem ser ordenhados
+            if (cow.sick) {
+                alert('🤒 Esta vaca está doente! Vacine-a primeiro antes de ordenhar.');
+                return;
+            }
+            
             if (!cow.readyToMilk || cow.isBeingMilked) return;
             
             cow.isBeingMilked = true;
@@ -6322,6 +6642,13 @@
         // Coletar ovos
         function collectEggs(chickenId) {
             const chicken = gameState.chickens[chickenId];
+            
+            // Animais doentes não produzem
+            if (chicken.sick) {
+                alert('🤒 Esta galinha está doente! Vacine-a primeiro para ela voltar a produzir ovos.');
+                return;
+            }
+            
             if (!chicken.readyToCollect) return;
             
             gameState.products.eggs += 3; // 3 ovos por dia
@@ -6342,6 +6669,13 @@
         // Coletar carne
         function collectMeat(pigId) {
             const pig = gameState.pigs[pigId];
+            
+            // Animais doentes não produzem
+            if (pig.sick) {
+                alert('🤒 Este porco está doente! Vacine-o primeiro para ele voltar a produzir carne.');
+                return;
+            }
+            
             if (!pig.readyToCollect) return;
             
             gameState.products.meat += 1;
@@ -6363,6 +6697,13 @@
         // Coletar lã (tosquiar)
         function collectWool(sheepId) {
             const sheep = gameState.sheep[sheepId];
+            
+            // Animais doentes não produzem
+            if (sheep.sick) {
+                alert('🤒 Esta ovelha está doente! Vacine-a primeiro para ela voltar a produzir lã.');
+                return;
+            }
+            
             if (!sheep.readyToCollect || sheep.isBeingSheared) return;
             
             sheep.isBeingSheared = true;
@@ -6399,14 +6740,14 @@
         function feedAllCows() {
             let fedCount = 0;
             gameState.cows.forEach((cow, index) => {
-                if (!cow.fed && !cow.milkedToday && gameState.hay > 0) {
+                if (!cow.fed && !cow.milkedToday && !cow.sick && gameState.hay > 0) {
                     feedCow(index);
                     fedCount++;
                 }
             });
             
             if (fedCount === 0) {
-                alert('Nenhuma vaca pode ser alimentada (sem feno ou já alimentadas)!');
+                alert('Nenhuma vaca pode ser alimentada (sem feno, já alimentadas ou doentes)!');
             }
         }
 
@@ -6414,7 +6755,7 @@
         function milkAllCows() {
             let totalMilk = 0;
             gameState.cows.forEach((cow, index) => {
-                if (cow.readyToMilk && !cow.milkedToday) {
+                if (cow.readyToMilk && !cow.milkedToday && !cow.sick) {
                     totalMilk += 3;
                     milkCow(index);
                 }
@@ -6423,7 +6764,7 @@
             if (totalMilk > 0) {
                 alert(`Todas as vacas ordenhadas! +${totalMilk} leites`);
             } else {
-                alert('Nenhuma vaca está pronta para ordenhar!');
+                alert('Nenhuma vaca está pronta para ordenhar (podem estar doentes)!');
             }
         }
 
@@ -6431,14 +6772,14 @@
         function feedAllChickens() {
             let fedCount = 0;
             gameState.chickens.forEach((chicken, index) => {
-                if (!chicken.fed && gameState.feed.chicken > 0) {
+                if (!chicken.fed && !chicken.sick && gameState.feed.chicken > 0) {
                     feedChicken(index);
                     fedCount++;
                 }
             });
             
             if (fedCount === 0) {
-                alert('Nenhuma galinha pode ser alimentada (sem ração ou já alimentadas)!');
+                alert('Nenhuma galinha pode ser alimentada (sem ração no celeiro, já alimentadas ou doentes)!');
             }
         }
 
@@ -6446,8 +6787,8 @@
         function collectAllEggs() {
             let totalEggs = 0;
             gameState.chickens.forEach((chicken, index) => {
-                if (chicken.readyToCollect) {
-                    totalEggs += 2;
+                if (chicken.readyToCollect && !chicken.sick) {
+                    totalEggs += 3;
                     collectEggs(index);
                 }
             });
@@ -6455,7 +6796,7 @@
             if (totalEggs > 0) {
                 alert(`Todos os ovos coletados! +${totalEggs} ovos`);
             } else {
-                alert('Nenhuma galinha está pronta para coleta!');
+                alert('Nenhuma galinha está pronta para coleta (podem estar doentes)!');
             }
         }
 
@@ -6463,14 +6804,14 @@
         function feedAllPigs() {
             let fedCount = 0;
             gameState.pigs.forEach((pig, index) => {
-                if (!pig.fed && gameState.feed.pig > 0) {
+                if (!pig.fed && !pig.sick && gameState.feed.pig > 0) {
                     feedPig(index);
                     fedCount++;
                 }
             });
             
             if (fedCount === 0) {
-                alert('Nenhum porco pode ser alimentado (sem ração ou já alimentados)!');
+                alert('Nenhum porco pode ser alimentado (sem ração no celeiro, já alimentados ou doentes)!');
             }
         }
 
@@ -6478,7 +6819,7 @@
         function collectAllMeat() {
             let totalMeat = 0;
             gameState.pigs.forEach((pig, index) => {
-                if (pig.readyToCollect) {
+                if (pig.readyToCollect && !pig.sick) {
                     totalMeat += 1;
                     collectMeat(index);
                 }
@@ -6487,7 +6828,7 @@
             if (totalMeat > 0) {
                 alert(`Toda a carne coletada! +${totalMeat} carnes`);
             } else {
-                alert('Nenhum porco está pronto para coleta!');
+                alert('Nenhum porco está pronto para coleta (podem estar doentes)!');
             }
         }
 
@@ -6495,14 +6836,14 @@
         function feedAllSheep() {
             let fedCount = 0;
             gameState.sheep.forEach((sheep, index) => {
-                if (!sheep.fed && sheep.canFeedToday && gameState.hay > 0) {
+                if (!sheep.fed && sheep.canFeedToday && !sheep.sick && gameState.hay > 0) {
                     feedSheep(index);
                     fedCount++;
                 }
             });
             
             if (fedCount === 0) {
-                alert('Nenhuma ovelha pode ser alimentada (sem feno, já alimentadas ou não é o dia permitido)!');
+                alert('Nenhuma ovelha pode ser alimentada (sem feno, já alimentadas, doentes ou não é o dia permitido)!');
             }
         }
 
@@ -6510,7 +6851,7 @@
         function collectAllWool() {
             let totalWool = 0;
             gameState.sheep.forEach((sheep, index) => {
-                if (sheep.readyToCollect) {
+                if (sheep.readyToCollect && !sheep.sick) {
                     totalWool += 2;
                     collectWool(index);
                 }
@@ -6519,8 +6860,56 @@
             if (totalWool > 0) {
                 alert(`Toda a lã coletada! +${totalWool} lãs`);
             } else {
-                alert('Nenhuma ovelha está pronta para coleta!');
+                alert('Nenhuma ovelha está pronta para coleta (podem estar doentes)!');
             }
+        }
+
+        // Vacinar animal
+        function vaccinateAnimal(animalType, animalId) {
+            if (gameState.vaccines <= 0) {
+                alert('💉 Você não tem vacinas! Compre no mercadinho (25 moedas).');
+                return;
+            }
+            
+            gameState.vaccines--;
+            
+            let animal;
+            if (animalType === 'cow') {
+                animal = gameState.cows[animalId];
+            } else if (animalType === 'chicken') {
+                animal = gameState.chickens[animalId];
+            } else if (animalType === 'pig') {
+                animal = gameState.pigs[animalId];
+            } else if (animalType === 'sheep') {
+                animal = gameState.sheep[animalId];
+            }
+            
+            if (!animal || !animal.sick) {
+                alert('Este animal não está doente!');
+                return;
+            }
+            
+            // Curar animal
+            animal.sick = false;
+            animal.sickDay = 0;
+            if (animal.sickTimer) {
+                clearTimeout(animal.sickTimer);
+                animal.sickTimer = null;
+            }
+            
+            // Atualizar display
+            if (animalType === 'cow') {
+                updateCowDisplay(animalId);
+            } else if (animalType === 'chicken') {
+                updateChickenDisplay(animalId);
+            } else if (animalType === 'pig') {
+                updatePigDisplay(animalId);
+            } else if (animalType === 'sheep') {
+                updateSheepDisplay(animalId);
+            }
+            
+            updateDisplay();
+            alert(`💉 Animal vacinado e curado! A vacina foi consumida.`);
         }
 
         // Atualizar display da vaca
@@ -6531,7 +6920,10 @@
             
             cowElement.className = 'cow-item';
             
-            if (cow.isBeingMilked) {
+            if (cow.sick) {
+                cowElement.classList.add('sick');
+                statusElement.textContent = `🤒 Doente (${cow.sickDay}/2 dias)`;
+            } else if (cow.isBeingMilked) {
                 cowElement.classList.add('fed');
                 statusElement.textContent = `Ordenhando... ${Math.floor(cow.milkingProgress)}%`;
             } else if (cow.milkedToday) {
@@ -6555,7 +6947,10 @@
             
             chickenElement.className = 'cow-item';
             
-            if (chicken.laidEggsToday) {
+            if (chicken.sick) {
+                chickenElement.classList.add('sick');
+                statusElement.textContent = `🤒 Doente (${chicken.sickDay}/2 dias)`;
+            } else if (chicken.laidEggsToday) {
                 statusElement.textContent = 'Botou ovos hoje';
             } else if (chicken.readyToCollect) {
                 chickenElement.classList.add('ready-to-milk');
@@ -6576,7 +6971,10 @@
             
             pigElement.className = 'cow-item';
             
-            if (!pig.canProduceToday) {
+            if (pig.sick) {
+                pigElement.classList.add('sick');
+                statusElement.textContent = `🤒 Doente (${pig.sickDay}/2 dias)`;
+            } else if (!pig.canProduceToday) {
                 statusElement.textContent = 'Aguardando próximo dia';
             } else if (pig.readyToCollect) {
                 pigElement.classList.add('ready-to-milk');
@@ -6978,11 +7376,17 @@
                 document.getElementById('hay-count').textContent = gameState.hay;
             }
             
-            // Atualizar misturador
-            if (gameState.hasMixer) {
-                document.getElementById('chicken-feed').textContent = gameState.feed.chicken;
-                document.getElementById('pig-feed').textContent = gameState.feed.pig;
-            }
+            // Atualizar rações no celeiro
+            const chickenFeedCeleiro = document.getElementById('chicken-feed-celeiro');
+            const pigFeedCeleiro = document.getElementById('pig-feed-celeiro');
+            if (chickenFeedCeleiro) chickenFeedCeleiro.textContent = gameState.feed.chicken;
+            if (pigFeedCeleiro) pigFeedCeleiro.textContent = gameState.feed.pig;
+            
+            // Atualizar comidas no celeiro
+            const saladCeleiro = document.getElementById('salad-celeiro');
+            const stewCeleiro = document.getElementById('stew-celeiro');
+            if (saladCeleiro) saladCeleiro.textContent = gameState.food.salad;
+            if (stewCeleiro) stewCeleiro.textContent = gameState.food.stew;
             
             // Atualizar pasto das vacas
             if (gameState.hasPasture) {
@@ -6992,7 +7396,7 @@
             }
             
             // Atualizar galinheiro
-            if (gameState.hasMixer) {
+            if (gameState.hasChickenCoop) {
                 document.getElementById('chicken-count').textContent = gameState.chickens.length;
                 document.getElementById('chick-count').textContent = gameState.chicks.length;
                 document.getElementById('raw-chicken-count').textContent = gameState.products.rawChicken;
@@ -7001,7 +7405,7 @@
             }
             
             // Atualizar chiqueiro
-            if (gameState.hasMixer) {
+            if (gameState.hasPigPen) {
                 document.getElementById('pig-count').textContent = gameState.pigs.length;
                 const availableMeat = gameState.pigs.filter(pig => pig.readyToCollect).length;
                 document.getElementById('available-meat').textContent = availableMeat;
@@ -7057,7 +7461,7 @@
 
             const treeTimer = document.getElementById('tree-timer');
             if (treeTimer) {
-                treeTimer.textContent = `Batidas hoje: ${gameState.treeHitsToday}/6`;
+                treeTimer.textContent = '';
             }
             
             if (gameState.hasAxe) {
@@ -7227,6 +7631,10 @@
                 hayCeleiroElement.textContent = gameState.hay;
             }
             
+            // Atualizar vacinas no celeiro
+            const vaccinesCeleiro = document.getElementById('vaccines-celeiro');
+            if (vaccinesCeleiro) vaccinesCeleiro.textContent = gameState.vaccines;
+            
             // Atualizar todos os canteiros
             for (let i = 0; i < gameState.maxPlots; i++) {
                 updatePlotDisplay(i);
@@ -7320,8 +7728,7 @@
                             gameState.canCollectOranges = true;
                         }
                         
-                        // Reset das batidas na árvore (6 por dia)
-                        gameState.treeHitsToday = 0;
+
                         
                         // Verificar se pode coletar mel (a cada 2 dias)
                         if (gameState.hasBeehive && gameState.dayCount - gameState.lastHoneyCollection >= 2) {
@@ -7488,6 +7895,7 @@
         function startSeasonCycle() {
             // Aplicar classe inicial
             document.body.classList.add(`season-${gameState.currentSeason}`);
+            updateSeasonalVisibility();
             
             setInterval(() => {
                 // Remover classe da estação anterior
@@ -7499,15 +7907,43 @@
                 // Aplicar classe da nova estação
                 document.body.classList.add(`season-${gameState.currentSeason}`);
                 
+                // Atualizar visibilidade baseada na estação
+                updateSeasonalVisibility();
+                
                 // Mensagem de mudança de estação
                 const seasonMessages = [
                     '🌸 Primavera chegou! Plantas são mais valiosas!',
                     '☀️ Verão chegou! Plantas produzem 2 frutos!',
                     '🍂 Outono chegou! Plantas crescem em 1 minuto!',
-                    '❄️ Inverno chegou! Não é possível plantar.'
+                    '❄️ Inverno chegou! Não é possível plantar nos canteiros normais.'
                 ];
                 alert(seasonMessages[gameState.currentSeason]);
             }, 7200000); // Muda estação a cada 2 horas
+        }
+
+        // Atualizar visibilidade baseada na estação
+        function updateSeasonalVisibility() {
+            const isWinter = gameState.currentSeason === 3;
+            
+            // Mostrar/esconder botão de comprar estufa baseado na estação
+            const buyGreenhouseBtn = document.getElementById('buy-greenhouse-btn');
+            if (buyGreenhouseBtn) {
+                if (isWinter && !gameState.hasGreenhouse) {
+                    buyGreenhouseBtn.style.display = 'block';
+                } else if (!isWinter) {
+                    buyGreenhouseBtn.style.display = 'none';
+                }
+            }
+            
+            // Mostrar/esconder área da estufa baseado na estação (se já possui)
+            const greenhouseArea = document.getElementById('greenhouse-area');
+            if (greenhouseArea && gameState.hasGreenhouse) {
+                if (isWinter) {
+                    greenhouseArea.style.display = 'block';
+                } else {
+                    greenhouseArea.style.display = 'none';
+                }
+            }
         }
 
         // Sistema de Tutorial
@@ -7834,5 +8270,5 @@
             console.log('🕐 Cronômetro ativado! O tempo está correndo...');
         };
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96930d6eb1ff00a9',t:'MTc1NDE5NTE0MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9693a640432e007b',t:'MTc1NDIwMTQwMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
