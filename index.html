@@ -714,7 +714,8 @@
             <div class="info-item">💰 <span id="money">200</span> moedas</div>
             <div class="info-item">💧 <span id="water">0</span> baldes</div>
             <div class="info-item">🌿 <span id="fertilizer">0</span> adubos</div>
-            <div class="info-item">⏰ <span id="time-display">10:00</span></div>
+            <div class="info-item">📅 Dia <span id="day-counter">1</span></div>
+            <div class="info-item">⏰ <span id="time-display">06:00</span></div>
             <div class="info-item">🌅 <span id="day-night">Dia</span></div>
         </div>
     </div>
@@ -931,7 +932,7 @@
                         <div class="tree" id="tree" onclick="collectLogs()" style="font-size: 3rem; cursor: pointer; transition: transform 0.3s ease;">
                             🌳
                         </div>
-                        <p style="color: #2F4F4F; font-size: 0.8rem;">Árvore (5 troncos/dia + galhos)</p>
+                        <p style="color: #2F4F4F; font-size: 0.8rem;">Árvore (1 tronco/batida, galho a cada 3)</p>
                         <div id="tree-timer" style="font-size: 0.7rem; color: #666;"></div>
                     </div>
                     <div>
@@ -1176,6 +1177,10 @@
                     <div id="inventory-display" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; font-size: 0.8rem;">
                         <!-- Celeiro será atualizado pelo JavaScript -->
                     </div>
+                    <div id="hay-display" style="margin-top: 10px; text-align: center; padding: 8px; background: #FFF8DC; border-radius: 8px; border: 2px solid #DAA520;">
+                        <div style="font-size: 1.2rem; margin-bottom: 3px;">🟨</div>
+                        <div style="font-size: 0.8rem; color: #2F4F4F; font-weight: bold;">Feno: <span id="hay-celeiro">0</span></div>
+                    </div>
                 </div>
             </div>
 
@@ -1193,11 +1198,11 @@
                     <button class="action-btn" onclick="buyCow()" id="buy-cow-btn" style="display: none;">Comprar Vaca Leiteira (80 moedas)</button>
                     <button class="action-btn" onclick="buyDryer()" id="buy-dryer-btn">Comprar Secador de Grama (80 moedas)</button>
                     <button class="action-btn" onclick="buyCompost()" id="buy-compost-btn">Comprar Composteira (100 moedas)</button>
+                    <button class="action-btn" onclick="buyMixer()" id="buy-mixer-btn">Comprar Misturador (120 moedas)</button>
+                    <button class="action-btn" onclick="buyChicken()" id="buy-chicken-btn" style="display: none;">Comprar Galinha (60 moedas)</button>
+                    <button class="action-btn" onclick="buyPig()" id="buy-pig-btn" style="display: none;">Comprar Porco (100 moedas)</button>
                     <button class="action-btn" onclick="buyStove()" id="buy-stove-btn">Comprar Fogão a Lenha (150 moedas)</button>
                     <button class="action-btn" onclick="buyPlots()" id="buy-plots-btn">Comprar +8 Canteiros (200 moedas)</button>
-                    <button class="action-btn" onclick="buyChicken()" id="buy-chicken-btn" style="display: none;">Comprar Galinha (60 moedas)</button>
-                    <button class="action-btn" onclick="buyMixer()" id="buy-mixer-btn">Comprar Misturador (120 moedas)</button>
-                    <button class="action-btn" onclick="buyPig()" id="buy-pig-btn" style="display: none;">Comprar Porco (100 moedas)</button>
                     <button class="action-btn" onclick="buySheepPen()" id="buy-sheep-pen-btn">Comprar Curral de Ovelhas (180 moedas)</button>
                     <button class="action-btn" onclick="buySheep()" id="buy-sheep-btn" style="display: none;">Comprar Ovelha (70 moedas)</button>
                     
@@ -1291,7 +1296,7 @@
             </div>
 
             <div class="panel" id="wood-panel" style="display: none;">
-                <h3>🪓 Cortar Lenha</h3>
+                <h3>🪨 Cortar Lenha</h3>
                 <div style="margin-bottom: 15px;">
                     <div>🪵 Troncos: <span id="logs-inventory">0</span></div>
                     <div>🪨 Lenha: <span id="firewood-count">0</span></div>
@@ -1301,7 +1306,7 @@
                     🪨 Lenha: 1 tronco = 4 lenhas (10 segundos)
                 </div>
                 <div class="actions">
-                    <button class="action-btn" onclick="refineWood()">Refinar Tronco</button>
+                    <button class="action-btn" onclick="refineWood()">Cortar Lenha</button>
                 </div>
                 <div id="wood-status" style="margin-top: 10px; text-align: center; color: #2F4F4F;"></div>
             </div>
@@ -1422,6 +1427,7 @@
             hasMixer: false,
             hasCheeseMaker: false,
             hasAxe: false,
+            hasWoodCutter: false,
             axeUses: 0,
             logs: 0,
             firewood: 0,
@@ -1471,6 +1477,7 @@
             hasBosque: false,
             branchesCollected: 0,
             logsCollectedCount: 0,
+            treeHitsToday: 0,
             horse: {
                 fed: false,
                 friendship: 0,
@@ -1692,7 +1699,7 @@
                     document.getElementById('pigs-area').style.display = 'block';
                 }
                 if (gameState.hasCheeseMaker) document.getElementById('cheese-panel').style.display = 'block';
-                if (gameState.hasAxe) document.getElementById('wood-panel').style.display = 'block';
+                if (gameState.hasWoodCutter) document.getElementById('wood-panel').style.display = 'block';
                 if (gameState.hasRoaster) document.getElementById('roaster-panel').style.display = 'block';
                 if (gameState.hasSpinningMachine) document.getElementById('spinning-panel').style.display = 'block';
                 if (gameState.hasMill) document.getElementById('mill-panel').style.display = 'block';
@@ -2134,7 +2141,7 @@
             alert('Queijaria comprada! Agora você pode fazer queijo com leite (2 leites = 1 queijo).');
         }
 
-        // Comprar machado
+        // Comprar machado (agora inclui cortador de lenha)
         function buyAxe() {
             if (gameState.hasAxe) {
                 alert('Você já tem um machado!');
@@ -2148,11 +2155,17 @@
             
             gameState.money -= 40;
             gameState.hasAxe = true;
-            document.getElementById('wood-panel').style.display = 'block';
+            gameState.hasWoodCutter = true; // Agora vem junto
             document.getElementById('buy-axe-btn').style.display = 'none';
+            document.getElementById('wood-panel').style.display = 'block'; // Mostrar painel de cortar lenha
             updateDisplay();
-            alert('Machado comprado! Agora você pode coletar troncos da árvore e refinar em lenha.');
+            alert('Machado comprado! Agora você pode coletar troncos da árvore e cortar lenha!');
             showTutorial('buy-axe');
+        }
+
+        // Função mantida para compatibilidade (não será mais usada)
+        function buyWoodCutter() {
+            alert('O cortador de lenha agora vem junto com o machado!');
         }
 
         // Comprar torradeira
@@ -2858,6 +2871,11 @@
                 return;
             }
             
+            if (gameState.money < 10) {
+                alert('Você não tem dinheiro suficiente! Cada semente custa 10 moedas.');
+                return;
+            }
+            
             const plot = gameState.greenhousePlots[gameState.selectedGreenhousePlot];
             if (!plot.fertilized) {
                 alert('Adube o solo primeiro!');
@@ -2869,12 +2887,13 @@
                 return;
             }
             
+            gameState.money -= 10;
             gameState.energy = Math.max(0, gameState.energy - 5);
             plot.planted = true;
             plot.seedType = gameState.selectedSeed;
             updateGreenhousePlotDisplay(gameState.selectedGreenhousePlot);
             updateDisplay();
-            alert('Semente plantada na estufa! Agora regue para crescer. 🏠');
+            alert('Semente plantada na estufa por 10 moedas! Agora regue para crescer. 🏠');
         }
 
         // Regar canteiro da estufa
@@ -3593,7 +3612,7 @@
             horse.fedToday = true;
             horse.lastFeedDay = gameState.dayCount;
             
-            // Produzir esterco
+            // Produzir esterco diariamente
             gameState.compostMaterials.manure += 1;
             
             // Mostrar corações
@@ -3601,7 +3620,7 @@
             
             updateHorseDisplay();
             updateDisplay();
-            alert('Duque foi alimentado com feno! +1 esterco adicionado.');
+            alert('Duque foi alimentado com feno! +1 esterco adicionado à composteira.');
         }
 
         // Dar maçã ao cavalo (+amizade)
@@ -3996,7 +4015,7 @@
                     gameState.hay += 4;
                     statusElement.textContent = '4 fenos prontos! 🟨';
                     updateDisplay();
-                    alert('4 fenos foram produzidos! Agora você pode alimentar vacas com feno.');
+                    alert('4 fenos foram produzidos e armazenados no celeiro! Agora você pode alimentar vacas, cavalos e ovelhas com feno.');
                 }
             };
             
@@ -4622,42 +4641,43 @@
                 return;
             }
             
-            if (!gameState.canCollectLogs) {
-                alert('A árvore ainda não cresceu! Aguarde até amanhã.');
-                return;
-            }
-            
             if (gameState.energy <= 0) {
                 alert('Você está sem energia! Descanse ou se alimente.');
                 return;
             }
             
-            gameState.energy = Math.max(0, gameState.energy - 0.5); // Perde 0.5 pontos (0.5% de 100)
-            gameState.logs += 5;
-            gameState.axeUses += 1;
-            gameState.canCollectLogs = false;
-            gameState.lastLogCollection = gameState.dayCount;
-            gameState.logsCollectedCount += 5;
+            // Verificar limite diário de 6 batidas
+            if (gameState.treeHitsToday >= 6) {
+                alert('Você já bateu 6 vezes na árvore hoje! Aguarde o próximo dia.');
+                return;
+            }
             
-            // A cada 5 troncos coletados, ganha 1 galho
-            if (gameState.logsCollectedCount >= 5) {
+            gameState.energy = Math.max(0, gameState.energy - 0.5); // Perde 0.5 pontos (0.5% de 100)
+            gameState.logs += 1; // Agora ganha 1 tronco por batida
+            gameState.axeUses += 1;
+            gameState.treeHitsToday += 1;
+            gameState.logsCollectedCount += 1;
+            
+            // A cada 3 batidas na árvore, ganha 1 galho
+            if (gameState.logsCollectedCount >= 3) {
                 gameState.branchesCollected += 1;
                 gameState.compostMaterials.branches += 1;
                 gameState.logsCollectedCount = 0;
-                alert('Troncos coletados! +5 troncos + 1 galho para composteira!');
+                alert('Machado bateu na árvore! +1 tronco + 1 galho para composteira!');
                 showTutorial('collect-logs');
             } else {
-                alert('Troncos coletados! +5 troncos (próxima coleta amanhã)');
+                alert(`Machado bateu na árvore! +1 tronco`);
                 showTutorial('collect-logs');
             }
             
             // Verificar se o machado quebrou
             if (gameState.axeUses >= 50) {
                 gameState.hasAxe = false;
+                gameState.hasWoodCutter = false; // Perde os dois juntos
                 gameState.axeUses = 0;
                 document.getElementById('wood-panel').style.display = 'none';
-                document.getElementById('buy-axe-btn').style.display = 'none';
-                alert('Seu machado quebrou! Você precisa comprar outro.');
+                document.getElementById('buy-axe-btn').style.display = 'block';
+                alert('Seu machado quebrou! Você precisa comprar outro machado (que já inclui o cortador de lenha).');
             }
             
             // Animação da árvore
@@ -4786,8 +4806,8 @@
 
         // Refinar madeira
         function refineWood() {
-            if (!gameState.hasAxe) {
-                alert('Você precisa comprar um machado primeiro!');
+            if (!gameState.hasWoodCutter) {
+                alert('Você precisa comprar o cortador de lenha primeiro!');
                 return;
             }
             
@@ -4808,7 +4828,7 @@
             const statusElement = document.getElementById('wood-status');
             
             const updateTimer = () => {
-                statusElement.textContent = `Refinando madeira... ${timeLeft}s`;
+                statusElement.textContent = `Cortando lenha... ${timeLeft}s`;
                 timeLeft--;
                 
                 if (timeLeft < 0) {
@@ -4817,7 +4837,7 @@
                     statusElement.textContent = '4 lenhas prontas! 🪨';
                     clearInterval(gameState.woodTimer);
                     updateDisplay();
-                    alert('Refinamento completo! +4 lenhas');
+                    alert('Corte completo! +4 lenhas');
                 }
             };
             
@@ -5225,6 +5245,11 @@
                 return;
             }
             
+            if (gameState.money < 10) {
+                alert('Você não tem dinheiro suficiente! Cada semente custa 10 moedas.');
+                return;
+            }
+            
             const plot = gameState.plots[gameState.selectedPlot];
             if (!plot.fertilized) {
                 alert('Adube o solo primeiro!');
@@ -5236,7 +5261,8 @@
                 return;
             }
             
-            // Consumir energia
+            // Consumir dinheiro e energia
+            gameState.money -= 10;
             gameState.energy = Math.max(0, gameState.energy - 0.5); // Perde 0.5 pontos (0.5% de 100)
             
             plot.planted = true;
@@ -5245,7 +5271,7 @@
             updateDisplay();
             
             // Mensagem baseada na estação
-            let message = 'Semente plantada! Agora regue para crescer.';
+            let message = `Semente plantada por 10 moedas! Agora regue para crescer.`;
             if (gameState.currentSeason === 0) { // Primavera
                 message += ' ✨ Na primavera, suas plantas são mais valiosas!';
             } else if (gameState.currentSeason === 1) { // Verão
@@ -6754,6 +6780,7 @@
             let totalEarnings = 0;
             let soldItems = [];
             
+            // Vender produtos da fazenda
             Object.keys(gameState.products).forEach(product => {
                 if (gameState.products[product] > 0) {
                     const earnings = gameState.products[product] * productPrices[product];
@@ -6763,10 +6790,72 @@
                 }
             });
             
+            // Vender frutas
+            const fruits = [
+                { key: 'bananas', emoji: '🍌', price: 8 },
+                { key: 'apples', emoji: '🍎', price: 10 },
+                { key: 'oranges', emoji: '🍊', price: 9 }
+            ];
+            
+            fruits.forEach(fruit => {
+                const count = gameState[fruit.key] || 0;
+                if (count > 0) {
+                    const earnings = count * fruit.price;
+                    totalEarnings += earnings;
+                    soldItems.push(`${count} ${fruit.emoji}`);
+                    gameState[fruit.key] = 0;
+                }
+            });
+            
+            // Vender vegetais do inventário
+            seeds.forEach((seed, index) => {
+                const count = gameState.inventory[index] || 0;
+                if (count > 0) {
+                    let price = seed.sellPrice;
+                    let bonusText = '';
+                    
+                    // Bônus da primavera: +50% no valor de venda
+                    if (gameState.currentSeason === 0) {
+                        price = Math.floor(price * 1.5);
+                        bonusText = ' ✨';
+                    }
+                    
+                    const earnings = count * price;
+                    totalEarnings += earnings;
+                    soldItems.push(`${count} ${seed.emoji}${bonusText}`);
+                    gameState.inventory[index] = 0;
+                }
+            });
+            
+            // Vender tesouros da Mocinha
+            const treasures = [
+                { key: 'cd', emoji: '💿', price: 80 },
+                { key: 'bottle', emoji: '🍼', price: 60 },
+                { key: 'shoe', emoji: '👟', price: 70 },
+                { key: 'ball', emoji: '⚽', price: 90 }
+            ];
+            
+            treasures.forEach(treasure => {
+                const count = gameState.treasures[treasure.key] || 0;
+                if (count > 0) {
+                    const earnings = count * treasure.price;
+                    totalEarnings += earnings;
+                    soldItems.push(`${count} ${treasure.emoji}`);
+                    gameState.treasures[treasure.key] = 0;
+                }
+            });
+            
             if (totalEarnings > 0) {
                 gameState.money += totalEarnings;
                 updateDisplay();
-                alert(`Vendido: ${soldItems.join(', ')}\nTotal ganho: ${totalEarnings} moedas!`);
+                
+                let message = `💰 Tudo vendido por ${totalEarnings} moedas!`;
+                
+                if (gameState.currentSeason === 0) {
+                    message += ` ✨ (Bônus da primavera aplicado!)`;
+                }
+                
+                alert(message);
             } else {
                 alert('Você não tem produtos para vender!');
             }
@@ -6831,6 +6920,7 @@
             document.getElementById('water').textContent = gameState.water;
             document.getElementById('fertilizer').textContent = gameState.fertilizer;
             document.getElementById('energy').textContent = gameState.energy;
+            document.getElementById('day-counter').textContent = gameState.dayCount;
             
             // Atualizar barra de energia
             const energyBar = document.getElementById('energy-bar');
@@ -6966,10 +7056,8 @@
             }
 
             const treeTimer = document.getElementById('tree-timer');
-            if (!gameState.canCollectLogs) {
-                treeTimer.textContent = 'Próxima coleta amanhã';
-            } else {
-                treeTimer.textContent = 'Disponível para coleta!';
+            if (treeTimer) {
+                treeTimer.textContent = `Batidas hoje: ${gameState.treeHitsToday}/6`;
             }
             
             if (gameState.hasAxe) {
@@ -7133,6 +7221,12 @@
                 }
             });
             
+            // Atualizar feno no celeiro
+            const hayCeleiroElement = document.getElementById('hay-celeiro');
+            if (hayCeleiroElement) {
+                hayCeleiroElement.textContent = gameState.hay;
+            }
+            
             // Atualizar todos os canteiros
             for (let i = 0; i < gameState.maxPlots; i++) {
                 updatePlotDisplay(i);
@@ -7152,12 +7246,25 @@
                 // Decrementar tempo
                 gameState.gameTime--;
                 
+                // Calcular horas e minutos para display (começando às 6:00)
+                const totalMinutesInDay = 900; // 15 minutos de duração do dia
+                const currentMinutes = totalMinutesInDay - gameState.gameTime;
+                const gameHour = 6 + Math.floor(currentMinutes / 60); // Começa às 6:00
+                const gameMinute = currentMinutes % 60;
+                
                 // Atualizar display do tempo
-                const minutes = Math.floor(gameState.gameTime / 60);
-                const seconds = gameState.gameTime % 60;
                 const timeDisplay = document.getElementById('time-display');
                 if (timeDisplay) {
-                    timeDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                    if (gameState.isNight) {
+                        // Durante a noite, mostrar contagem regressiva simples
+                        const minutes = Math.floor(gameState.gameTime / 60);
+                        const seconds = gameState.gameTime % 60;
+                        timeDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                    } else {
+                        // Durante o dia, mostrar horário do jogo
+                        const displayHour = gameHour > 24 ? gameHour - 24 : gameHour;
+                        timeDisplay.textContent = `${displayHour.toString().padStart(2, '0')}:${gameMinute.toString().padStart(2, '0')}`;
+                    }
                 }
                 
                 // Verificar mudança de período
@@ -7202,7 +7309,7 @@
                             updateDogDisplay();
                         }
                         
-                        // Verificar se pode coletar frutas e troncos (diariamente)
+                        // Verificar se pode coletar frutas (diariamente)
                         if (gameState.dayCount - gameState.lastAppleCollection >= 1) {
                             gameState.canCollectApples = true;
                         }
@@ -7212,9 +7319,9 @@
                         if (gameState.dayCount - gameState.lastOrangeCollection >= 1) {
                             gameState.canCollectOranges = true;
                         }
-                        if (gameState.dayCount - gameState.lastLogCollection >= 1) {
-                            gameState.canCollectLogs = true;
-                        }
+                        
+                        // Reset das batidas na árvore (6 por dia)
+                        gameState.treeHitsToday = 0;
                         
                         // Verificar se pode coletar mel (a cada 2 dias)
                         if (gameState.hasBeehive && gameState.dayCount - gameState.lastHoneyCollection >= 2) {
@@ -7273,14 +7380,14 @@
                         alert(`🌅 Novo dia começou! Dia ${gameState.dayCount}`);
                     } else {
                         // Fim do dia, começar noite
-                        gameState.gameTime = 60; // 1 minuto (60 segundos)
+                        gameState.gameTime = 60; // 1 minuto (60 segundos) para a noite
                         gameState.isNight = true;
                         document.body.classList.add('night');
                         const dayNightElement = document.getElementById('day-night');
                         if (dayNightElement) {
                             dayNightElement.textContent = 'Noite';
                         }
-                        alert('🌙 A noite chegou! O avatar está dormindo...');
+                        alert('🌙 A noite chegou! O avatar está dormindo... (1 minuto até o próximo dia)');
                     }
                 }
                 
@@ -7722,7 +7829,10 @@
         window.onload = function() {
             initGame();
             startTutorial();
+            
+            // Ativar cronômetro automaticamente
+            console.log('🕐 Cronômetro ativado! O tempo está correndo...');
         };
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'969251e6c1580083',t:'MTc1NDE4NzQ2MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96930d6eb1ff00a9',t:'MTc1NDE5NTE0MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
