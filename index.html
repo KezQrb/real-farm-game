@@ -477,6 +477,78 @@
             }
         }
 
+        .order-item {
+            background: #F0F8FF;
+            border: 2px solid #4682B4;
+            border-radius: 8px;
+            padding: 8px;
+            transition: all 0.3s ease;
+            font-size: 0.8rem;
+        }
+
+        .order-item.ready {
+            border-color: #32CD32;
+            background: #F0FFF0;
+        }
+
+        .order-item.delivering {
+            border-color: #FFD700;
+            background: #FFFACD;
+            animation: pulse 1s infinite;
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+            font-weight: bold;
+            color: #2F4F4F;
+            font-size: 0.8rem;
+        }
+
+        .order-items {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 3px;
+            margin-bottom: 6px;
+        }
+
+        .order-item-detail {
+            background: rgba(255,255,255,0.7);
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            border: 1px solid #ddd;
+        }
+
+        .order-actions {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+        }
+
+        .order-btn {
+            background: #32CD32;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .order-btn:hover {
+            background: #228B22;
+        }
+
+        .order-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
         .fishing-ripple {
             position: absolute;
             border: 2px solid rgba(255, 255, 255, 0.6);
@@ -736,25 +808,24 @@
 
 
 
-            <div class="animals-area" id="horse-stable" style="display: none;">
+            <div class="animals-area" id="horse-stable" style="display: none; max-width: 350px;">
                 <h3>🐴 Baia do Duque</h3>
-                <div style="margin-bottom: 15px; text-align: center;">
+                <div style="margin-bottom: 10px; text-align: center; font-size: 0.85rem;">
                     <div>🐴 Cavalo: Duque</div>
                     <div>❤️ Amizade: <span id="horse-friendship">0</span>/100</div>
-                    <div>🟨 Feno no inventário: <span id="hay-for-horse">0</span></div>
-                    <div>🍎 Maçãs no inventário: <span id="apples-count">0</span></div>
+                    <div>🟨 Feno: <span id="hay-for-horse">0</span> | 🍎 Maçãs: <span id="apples-count">0</span></div>
                 </div>
-                <div style="text-align: center; margin-bottom: 15px; position: relative;">
-                    <div id="horse-display" onclick="interactWithHorse()" style="font-size: 4rem; cursor: pointer; transition: transform 0.3s ease;">
+                <div style="text-align: center; margin-bottom: 10px; position: relative;">
+                    <div id="horse-display" onclick="interactWithHorse()" style="font-size: 3rem; cursor: pointer; transition: transform 0.3s ease;">
                         🐴
                     </div>
-                    <div id="horse-hearts" style="position: absolute; top: -20px; left: 50%; transform: translateX(-50%); font-size: 1.5rem; opacity: 0; transition: opacity 0.5s ease;"></div>
-                    <div id="horse-status" style="color: #2F4F4F; font-size: 0.9rem; margin-top: 5px;">Com fome (precisa de 1 feno/dia)</div>
+                    <div id="horse-hearts" style="position: absolute; top: -15px; left: 50%; transform: translateX(-50%); font-size: 1.2rem; opacity: 0; transition: opacity 0.5s ease;"></div>
+                    <div id="horse-status" style="color: #2F4F4F; font-size: 0.8rem; margin-top: 3px;">Com fome (precisa de 1 feno/dia)</div>
                 </div>
-                <div class="animals-actions">
-                    <button onclick="giveHayToHorse()">🟨 Dar Feno (alimentar)</button>
-                    <button onclick="giveAppleToHorse()">🍎 Dar Maçã (+10 amizade)</button>
-                    <button onclick="rideHorse()" id="ride-btn" style="display: none;">🏇 Montar Duque</button>
+                <div class="animals-actions" style="gap: 5px;">
+                    <button onclick="giveHayToHorse()" style="font-size: 0.8rem; padding: 6px 8px;">🟨 Dar Feno</button>
+                    <button onclick="giveAppleToHorse()" style="font-size: 0.8rem; padding: 6px 8px;">🍎 Dar Maçã</button>
+                    <button onclick="rideHorse()" id="ride-btn" style="display: none; font-size: 0.8rem; padding: 6px 8px;">🏇 Montar</button>
                 </div>
             </div>
 
@@ -832,34 +903,20 @@
                 </div>
             </div>
 
-            <div class="animals-area" id="fishing-lake" style="display: block;">
-                <h3>🎣 Lago dos Peixes</h3>
-                <div style="margin-bottom: 15px; text-align: center;">
-                    <div>🐟 Peixes disponíveis hoje: <span id="fish-available">4</span>/4</div>
-                    <div>🎣 Vara de pesca: <span id="fishing-rod-status">Não possui</span> (<span id="rod-uses">0</span>/50 usos)</div>
-                    <div>🐟 Peixes pescados: <span id="fish-caught-today">0</span></div>
+            <div class="animals-area" id="order-panel" style="display: none;">
+                <h3>📋 Painel de Pedidos</h3>
+                <div style="margin-bottom: 10px; text-align: center; font-size: 0.85rem;">
+                    <div>📦 Ativos: <span id="active-orders">0</span>/3 | ✅ Entregues: <span id="completed-orders">0</span> | 🐴 <span id="horse-delivery-status">Disponível</span></div>
                 </div>
-                <div style="text-align: center; margin-bottom: 15px; position: relative;">
-                    <div id="fishing-lake-container" style="background: linear-gradient(to bottom, #87CEEB, #4682B4); border-radius: 20px; width: 300px; height: 200px; margin: 0 auto; position: relative; overflow: hidden; cursor: crosshair; border: 3px solid #2F4F4F;">
-                        <div style="position: absolute; top: 10px; left: 10px; font-size: 1.5rem; opacity: 0.3;">🌊</div>
-                        <div style="position: absolute; top: 10px; right: 10px; font-size: 1.5rem; opacity: 0.3;">🌊</div>
-                        <div style="position: absolute; bottom: 10px; left: 10px; font-size: 1.5rem; opacity: 0.3;">🌊</div>
-                        <div style="position: absolute; bottom: 10px; right: 10px; font-size: 1.5rem; opacity: 0.3;">🌊</div>
-                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2rem; opacity: 0.2;">🌊</div>
-                        
-                        <!-- Peixes serão adicionados aqui pelo JavaScript -->
-                        <div id="fish-container"></div>
-                        
-                        <!-- Efeito de ondas -->
-                        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 20\"><path d=\"M0,10 Q25,0 50,10 T100,10 V20 H0 Z\" fill=\"rgba(255,255,255,0.1)\"/></svg>') repeat-x; animation: wave 3s linear infinite; pointer-events: none;"></div>
-                    </div>
-                    <p style="color: #2F4F4F; font-size: 0.8rem; margin-top: 5px;">Clique nos peixes para pescá-los! (Precisa de vara de pesca)</p>
-                    <div id="fishing-status" style="font-size: 0.9rem; color: #2F4F4F; margin-top: 5px;"></div>
+                <div id="orders-container" style="display: grid; grid-template-columns: 1fr; gap: 8px; margin-bottom: 10px; max-height: 300px; overflow-y: auto;">
+                    <!-- Pedidos serão gerados aqui -->
                 </div>
                 <div class="animals-actions">
-                    <button onclick="spawnFish()" id="spawn-fish-btn" style="display: none;">🐟 Repovoar Lago</button>
+                    <button onclick="generateNewOrder()" id="generate-order-btn" style="font-size: 0.8rem; padding: 6px 8px;">📋 Gerar 3 Pedidos</button>
                 </div>
             </div>
+
+
 
             <div class="animals-area" id="tree-area" style="display: none;">
                 <h3>🌳 Bosque</h3>
@@ -904,6 +961,35 @@
 
 
 
+
+            <div class="animals-area" id="fishing-lake" style="display: none;">
+                <h3>🎣 Lago dos Peixes</h3>
+                <div style="margin-bottom: 15px; text-align: center;">
+                    <div>🐟 Peixes disponíveis hoje: <span id="fish-available">4</span>/4</div>
+                    <div>🎣 Vara de pesca: <span id="fishing-rod-status">Não possui</span> (<span id="rod-uses">0</span>/50 usos)</div>
+                    <div>🐟 Peixes pescados: <span id="fish-caught-today">0</span></div>
+                </div>
+                <div style="text-align: center; margin-bottom: 15px; position: relative;">
+                    <div id="fishing-lake-container" style="background: linear-gradient(to bottom, #87CEEB, #4682B4); border-radius: 20px; width: 300px; height: 200px; margin: 0 auto; position: relative; overflow: hidden; cursor: crosshair; border: 3px solid #2F4F4F;">
+                        <div style="position: absolute; top: 10px; left: 10px; font-size: 1.5rem; opacity: 0.3;">🌊</div>
+                        <div style="position: absolute; top: 10px; right: 10px; font-size: 1.5rem; opacity: 0.3;">🌊</div>
+                        <div style="position: absolute; bottom: 10px; left: 10px; font-size: 1.5rem; opacity: 0.3;">🌊</div>
+                        <div style="position: absolute; bottom: 10px; right: 10px; font-size: 1.5rem; opacity: 0.3;">🌊</div>
+                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2rem; opacity: 0.2;">🌊</div>
+                        
+                        <!-- Peixes serão adicionados aqui pelo JavaScript -->
+                        <div id="fish-container"></div>
+                        
+                        <!-- Efeito de ondas -->
+                        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 20\"><path d=\"M0,10 Q25,0 50,10 T100,10 V20 H0 Z\" fill=\"rgba(255,255,255,0.1)\"/></svg>') repeat-x; animation: wave 3s linear infinite; pointer-events: none;"></div>
+                    </div>
+                    <p style="color: #2F4F4F; font-size: 0.8rem; margin-top: 5px;">Clique nos peixes para pescá-los! (Precisa de vara de pesca)</p>
+                    <div id="fishing-status" style="font-size: 0.9rem; color: #2F4F4F; margin-top: 5px;"></div>
+                </div>
+                <div class="animals-actions">
+                    <button onclick="spawnFish()" id="spawn-fish-btn" style="display: none;">🐟 Repovoar Lago</button>
+                </div>
+            </div>
 
             <div class="panel">
                 <h3>🥬 Quitanda</h3>
@@ -993,34 +1079,34 @@
                             <div class="product-price" style="font-size: 0.7rem;">9m</div>
                         </div>
                         <div class="product-item" onclick="sellInventoryItem(0)" style="padding: 5px;">
-                            <div class="product-emoji" style="font-size: 1.2rem;">🥔</div>
+                            <div class="product-emoji" style="font-size: 1.2rem;" id="potato-emoji">🥔</div>
                             <div class="product-count" id="potato-count" style="font-size: 0.8rem;">0</div>
-                            <div class="product-price" style="font-size: 0.7rem;">25m</div>
+                            <div class="product-price" style="font-size: 0.7rem;" id="potato-price">25m</div>
                         </div>
                         <div class="product-item" onclick="sellInventoryItem(1)" style="padding: 5px;">
-                            <div class="product-emoji" style="font-size: 1.2rem;">🍅</div>
+                            <div class="product-emoji" style="font-size: 1.2rem;" id="tomato-emoji">🍅</div>
                             <div class="product-count" id="tomato-count" style="font-size: 0.8rem;">0</div>
-                            <div class="product-price" style="font-size: 0.7rem;">30m</div>
+                            <div class="product-price" style="font-size: 0.7rem;" id="tomato-price">30m</div>
                         </div>
                         <div class="product-item" onclick="sellInventoryItem(2)" style="padding: 5px;">
-                            <div class="product-emoji" style="font-size: 1.2rem;">🥕</div>
+                            <div class="product-emoji" style="font-size: 1.2rem;" id="carrot-emoji">🥕</div>
                             <div class="product-count" id="carrot-count" style="font-size: 0.8rem;">0</div>
-                            <div class="product-price" style="font-size: 0.7rem;">20m</div>
+                            <div class="product-price" style="font-size: 0.7rem;" id="carrot-price">20m</div>
                         </div>
                         <div class="product-item" onclick="sellInventoryItem(6)" style="padding: 5px;">
-                            <div class="product-emoji" style="font-size: 1.2rem;">🎃</div>
+                            <div class="product-emoji" style="font-size: 1.2rem;" id="pumpkin-emoji">🎃</div>
                             <div class="product-count" id="pumpkin-count" style="font-size: 0.8rem;">0</div>
-                            <div class="product-price" style="font-size: 0.7rem;">40m</div>
+                            <div class="product-price" style="font-size: 0.7rem;" id="pumpkin-price">40m</div>
                         </div>
                         <div class="product-item" onclick="sellInventoryItem(7)" style="padding: 5px;">
-                            <div class="product-emoji" style="font-size: 1.2rem;">🥦</div>
+                            <div class="product-emoji" style="font-size: 1.2rem;" id="broccoli-emoji">🥦</div>
                             <div class="product-count" id="broccoli-count" style="font-size: 0.8rem;">0</div>
-                            <div class="product-price" style="font-size: 0.7rem;">25m</div>
+                            <div class="product-price" style="font-size: 0.7rem;" id="broccoli-price">25m</div>
                         </div>
                         <div class="product-item" onclick="sellInventoryItem(8)" style="padding: 5px;">
-                            <div class="product-emoji" style="font-size: 1.2rem;">🥬</div>
+                            <div class="product-emoji" style="font-size: 1.2rem;" id="lettuce-emoji">🥬</div>
                             <div class="product-count" id="lettuce-count" style="font-size: 0.8rem;">0</div>
-                            <div class="product-price" style="font-size: 0.7rem;">20m</div>
+                            <div class="product-price" style="font-size: 0.7rem;" id="lettuce-price">20m</div>
                         </div>
                     </div>
                 </div>
@@ -1072,20 +1158,23 @@
                     </div>
                     <div id="avatar-status" style="font-size: 0.8rem; color: #2F4F4F; margin-bottom: 8px;">Energizada e pronta!</div>
                 </div>
+                <div class="actions">
+                    <button class="action-btn" onclick="restAvatar()" id="rest-btn" style="padding: 8px; font-size: 0.9rem;">💤 Descansar (5 min)</button>
+                </div>
 
             </div>
 
 
 
             <div class="panel">
-                <h3>🌱 Sementes & Inventário</h3>
+                <h3>🌱 Sementes & Celeiro</h3>
                 <div class="seeds-grid" id="seeds-grid" style="grid-template-columns: repeat(2, 1fr); gap: 8px;">
                     <!-- Sementes serão geradas pelo JavaScript -->
                 </div>
                 <div style="margin-top: 15px; padding-top: 15px; border-top: 2px solid #32CD32;">
-                    <h4 style="color: #2F4F4F; margin-bottom: 8px; font-size: 1rem;">Inventário:</h4>
+                    <h4 style="color: #2F4F4F; margin-bottom: 8px; font-size: 1rem;">Celeiro:</h4>
                     <div id="inventory-display" style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; font-size: 0.8rem;">
-                        <!-- Inventário será atualizado pelo JavaScript -->
+                        <!-- Celeiro será atualizado pelo JavaScript -->
                     </div>
                 </div>
             </div>
@@ -1095,33 +1184,37 @@
             <div class="panel">
                 <h3>🏪 Mercadinho</h3>
                 <div class="actions" style="max-height: 400px; overflow-y: auto; padding-right: 10px;">
+                    <!-- Ordem reorganizada conforme solicitado -->
                     <button class="action-btn" onclick="buyWell()" id="buy-well-btn">Comprar Poço (50 moedas)</button>
-                    <button class="action-btn" onclick="buyCompost()" id="buy-compost-btn">Comprar Composteira (100 moedas)</button>
-                    <button class="action-btn" onclick="buyGrassField()" id="buy-grass-btn">Comprar Campo de Grama (150 moedas)</button>
-                    <button class="action-btn" onclick="buyDryer()" id="buy-dryer-btn">Comprar Secador de Grama (80 moedas)</button>
-                    <button class="action-btn" onclick="buyPasture()" id="buy-pasture-btn">Comprar Pasto (200 moedas)</button>
-                    <button class="action-btn" onclick="buySheepPen()" id="buy-sheep-pen-btn">Comprar Curral de Ovelhas (180 moedas)</button>
-                    <button class="action-btn" onclick="buyMixer()" id="buy-mixer-btn">Comprar Misturador (120 moedas)</button>
-                    <button class="action-btn" onclick="buyCheeseMaker()" id="buy-cheese-btn">Comprar Queijaria (90 moedas)</button>
+                    <button class="action-btn" onclick="buyBosque()" id="buy-bosque-btn">Comprar Bosque (300 moedas)</button>
                     <button class="action-btn" onclick="buyAxe()" id="buy-axe-btn">Comprar Machado (40 moedas)</button>
+                    <button class="action-btn" onclick="buyGrassField()" id="buy-grass-btn">Comprar Campo de Grama (150 moedas)</button>
+                    <button class="action-btn" onclick="buyPasture()" id="buy-pasture-btn">Comprar Pasto (200 moedas)</button>
+                    <button class="action-btn" onclick="buyCow()" id="buy-cow-btn" style="display: none;">Comprar Vaca Leiteira (80 moedas)</button>
+                    <button class="action-btn" onclick="buyDryer()" id="buy-dryer-btn">Comprar Secador de Grama (80 moedas)</button>
+                    <button class="action-btn" onclick="buyCompost()" id="buy-compost-btn">Comprar Composteira (100 moedas)</button>
+                    <button class="action-btn" onclick="buyStove()" id="buy-stove-btn">Comprar Fogão a Lenha (150 moedas)</button>
+                    <button class="action-btn" onclick="buyPlots()" id="buy-plots-btn">Comprar +8 Canteiros (200 moedas)</button>
+                    <button class="action-btn" onclick="buyChicken()" id="buy-chicken-btn" style="display: none;">Comprar Galinha (60 moedas)</button>
+                    <button class="action-btn" onclick="buyMixer()" id="buy-mixer-btn">Comprar Misturador (120 moedas)</button>
+                    <button class="action-btn" onclick="buyPig()" id="buy-pig-btn" style="display: none;">Comprar Porco (100 moedas)</button>
+                    <button class="action-btn" onclick="buySheepPen()" id="buy-sheep-pen-btn">Comprar Curral de Ovelhas (180 moedas)</button>
+                    <button class="action-btn" onclick="buySheep()" id="buy-sheep-btn" style="display: none;">Comprar Ovelha (70 moedas)</button>
+                    
+                    <!-- Restante em ordem aleatória -->
+                    <button class="action-btn" onclick="buyCheeseMaker()" id="buy-cheese-btn">Comprar Queijaria (90 moedas)</button>
                     <button class="action-btn" onclick="buyRoaster()" id="buy-roaster-btn">Comprar Torradeira (60 moedas)</button>
                     <button class="action-btn" onclick="buySpinningMachine()" id="buy-spinning-btn">Comprar Máquina de Fiar (70 moedas)</button>
                     <button class="action-btn" onclick="buyMill()" id="buy-mill-btn">Comprar Moinho (85 moedas)</button>
                     <button class="action-btn" onclick="buyBeehive()" id="buy-beehive-btn">Comprar Colmeia (120 moedas)</button>
                     <button class="action-btn" onclick="buyJuiceMaker()" id="buy-juice-btn">Comprar Máquina de Suco (75 moedas)</button>
-                    <button class="action-btn" onclick="buyStove()" id="buy-stove-btn">Comprar Fogão a Lenha (150 moedas)</button>
-                    <button class="action-btn" onclick="buyBosque()" id="buy-bosque-btn">Comprar Bosque (300 moedas)</button>
-                    <button class="action-btn" onclick="buyPlots()" id="buy-plots-btn">Comprar +8 Canteiros (200 moedas)</button>
                     <button class="action-btn" onclick="buyGreenhouse()" id="buy-greenhouse-btn">Comprar Estufa (800 moedas)</button>
-                    <button class="action-btn" onclick="buyFishingRod()" id="buy-fishing-rod-btn">Comprar Vara de Pesca (60 moedas)</button>
-
+                    <button class="action-btn" onclick="buyFishingLake()" id="buy-fishing-lake-btn">Comprar Lago dos Peixes (250 moedas)</button>
+                    <button class="action-btn" onclick="buyFishingRod()" id="buy-fishing-rod-btn" style="display: none;">Comprar Vara de Pesca (60 moedas)</button>
                     <button class="action-btn" onclick="buyDogFood()" id="buy-dog-food-btn">Comprar Ração de Cachorro (15 moedas)</button>
                     <button class="action-btn" onclick="buyDog()" id="buy-dog-btn">Comprar Mocinha (500 moedas)</button>
                     <button class="action-btn" onclick="buyHorse()" id="buy-horse-btn">Comprar Duque (1000 moedas)</button>
-                    <button class="action-btn" onclick="buyCow()" id="buy-cow-btn" style="display: none;">Comprar Vaca Leiteira (80 moedas)</button>
-                    <button class="action-btn" onclick="buyChicken()" id="buy-chicken-btn" style="display: none;">Comprar Galinha (60 moedas)</button>
-                    <button class="action-btn" onclick="buyPig()" id="buy-pig-btn" style="display: none;">Comprar Porco (100 moedas)</button>
-                    <button class="action-btn" onclick="buySheep()" id="buy-sheep-btn" style="display: none;">Comprar Ovelha (70 moedas)</button>
+                    <button class="action-btn" onclick="buyOrderPanel()" id="buy-order-panel-btn" style="display: none;">Comprar Painel de Pedidos (500 moedas)</button>
                 </div>
             </div>
 
@@ -1135,7 +1228,6 @@
                     <div>💩 Esterco: <span id="manure">0</span></div>
                 </div>
                 <div class="actions">
-                    <button class="action-btn" onclick="collectMaterials()">Coletar Materiais</button>
                     <button class="action-btn" onclick="makeCompost()">Fazer Adubo (1🌸 + 1🌿 + 2💩)</button>
                 </div>
                 <div id="compost-status" style="margin-top: 10px; text-align: center; color: #2F4F4F;"></div>
@@ -1311,14 +1403,14 @@
         // Estado do jogo
         let gameState = {
             money: 200,
-            water: 0,
+            water: 10,
             selectedSeed: null,
             selectedPlot: null,
             inventory: {},
             isRaining: false,
             isNight: false,
             currentSeason: 0,
-            gameTime: 900,
+            gameTime: 900, // 15 minutos para o dia (900 segundos)
             fertilizer: 50,
             energy: 100,
             hasCompost: false,
@@ -1368,6 +1460,7 @@
                 readyToHarvest: false,
                 growthTimer: null
             })),
+            hasFishingLake: false,
             hasFishingRod: false,
             fishingRodUses: 0,
             fishAvailable: 4,
@@ -1417,6 +1510,10 @@
                 ball: 0
             },
             treasuresFoundToday: 0,
+            hasOrderPanel: false,
+            orders: [],
+            completedOrders: 0,
+            orderTimer: null,
             cows: [],
             chickens: [],
             chicks: [],
@@ -1505,11 +1602,142 @@
             fish: 30
         };
 
+        // Sistema de salvamento automático
+        function saveGame() {
+            try {
+                const saveData = JSON.stringify(gameState);
+                localStorage.setItem('realFarmSave', saveData);
+                console.log('Jogo salvo automaticamente!');
+            } catch (error) {
+                console.error('Erro ao salvar o jogo:', error);
+            }
+        }
+
+        // Carregar jogo salvo
+        function loadGame() {
+            try {
+                const saveData = localStorage.getItem('realFarmSave');
+                if (saveData) {
+                    const loadedState = JSON.parse(saveData);
+                    
+                    // Mesclar dados salvos com estado atual (para compatibilidade)
+                    Object.keys(loadedState).forEach(key => {
+                        if (gameState.hasOwnProperty(key)) {
+                            gameState[key] = loadedState[key];
+                        }
+                    });
+                    
+                    console.log('Jogo carregado com sucesso!');
+                    return true;
+                }
+            } catch (error) {
+                console.error('Erro ao carregar o jogo:', error);
+            }
+            return false;
+        }
+
         // Inicializar o jogo
         function initGame() {
+            // Tentar carregar jogo salvo primeiro
+            const gameLoaded = loadGame();
+            
             createPlots();
             createSeedsGrid();
             spawnFish(); // Criar peixes no lago
+            
+            // Se carregou um jogo salvo, recriar elementos dos animais
+            if (gameLoaded) {
+                // Recriar vacas
+                gameState.cows.forEach((cow, index) => {
+                    createCowElement(index);
+                    updateCowDisplay(index);
+                });
+                
+                // Recriar galinhas
+                gameState.chickens.forEach((chicken, index) => {
+                    createChickenElement(index);
+                    updateChickenDisplay(index);
+                });
+                
+                // Recriar pintinhos
+                gameState.chicks.forEach((chick, index) => {
+                    createChickElement(index);
+                });
+                
+                // Recriar porcos
+                gameState.pigs.forEach((pig, index) => {
+                    createPigElement(index);
+                    updatePigDisplay(index);
+                });
+                
+                // Recriar ovelhas
+                gameState.sheep.forEach((sheep, index) => {
+                    createSheepElement(index);
+                    updateSheepDisplay(index);
+                });
+                
+                // Mostrar áreas compradas
+                if (gameState.hasWell) document.getElementById('well-panel').style.display = 'block';
+                if (gameState.hasCompost) document.getElementById('compost-panel').style.display = 'block';
+                if (gameState.hasGrassField) {
+                    document.getElementById('grass-field-area').style.display = 'block';
+                    createGrassField();
+                }
+                if (gameState.hasDryer) document.getElementById('drying-panel').style.display = 'block';
+                if (gameState.hasPasture) document.getElementById('pasture-area').style.display = 'block';
+                if (gameState.hasSheepPen) document.getElementById('sheep-area').style.display = 'block';
+                if (gameState.hasMixer) {
+                    document.getElementById('mixer-panel').style.display = 'block';
+                    document.getElementById('chickens-area').style.display = 'block';
+                    document.getElementById('pigs-area').style.display = 'block';
+                }
+                if (gameState.hasCheeseMaker) document.getElementById('cheese-panel').style.display = 'block';
+                if (gameState.hasAxe) document.getElementById('wood-panel').style.display = 'block';
+                if (gameState.hasRoaster) document.getElementById('roaster-panel').style.display = 'block';
+                if (gameState.hasSpinningMachine) document.getElementById('spinning-panel').style.display = 'block';
+                if (gameState.hasMill) document.getElementById('mill-panel').style.display = 'block';
+                if (gameState.hasBeehive) document.getElementById('beehive-area').style.display = 'block';
+                if (gameState.hasJuiceMaker) document.getElementById('juice-panel').style.display = 'block';
+                if (gameState.hasStove) document.getElementById('stove-panel').style.display = 'block';
+                if (gameState.hasBosque) document.getElementById('tree-area').style.display = 'block';
+                if (gameState.hasGreenhouse) {
+                    document.getElementById('greenhouse-area').style.display = 'block';
+                    createGreenhousePlots();
+                }
+                if (gameState.hasFishingLake) {
+                    document.getElementById('fishing-lake').style.display = 'block';
+                    document.getElementById('buy-fishing-lake-btn').style.display = 'none';
+                    document.getElementById('buy-fishing-rod-btn').style.display = gameState.hasFishingRod ? 'none' : 'block';
+                }
+                if (gameState.hasDog) document.getElementById('dog-area').style.display = 'block';
+                if (gameState.hasHorse) {
+                    document.getElementById('horse-stable').style.display = 'block';
+                    document.getElementById('buy-order-panel-btn').style.display = 'block';
+                }
+                if (gameState.hasOrderPanel) {
+                    document.getElementById('order-panel').style.display = 'block';
+                    // Recriar pedidos ativos
+                    gameState.orders.forEach(order => {
+                        createOrderElement(order);
+                        startOrderTimer(order.id);
+                    });
+                }
+                
+                // Aplicar classe da estação atual
+                document.body.classList.add(`season-${gameState.currentSeason}`);
+                document.getElementById('season-display').textContent = seasons[gameState.currentSeason];
+                
+                // Aplicar classe noturna se necessário
+                if (gameState.isNight) {
+                    document.body.classList.add('night');
+                    document.getElementById('day-night').textContent = 'Noite';
+                } else {
+                    document.getElementById('day-night').textContent = 'Dia';
+                }
+                
+                alert('🎮 Jogo carregado com sucesso! Bem-vindo de volta à sua fazenda!');
+            }
+            
             updateDisplay();
             startGameTimer();
             startWeatherSystem();
@@ -1591,6 +1819,7 @@
             
             alert(`${seeds[index].name} selecionada! Clique nos canteiros para plantar (10 moedas por semente).`);
             updateDisplay();
+            showTutorial('select-seed');
         }
 
         // Fiar lã
@@ -1753,6 +1982,7 @@
             document.getElementById('buy-well-btn').style.display = 'none';
             updateDisplay();
             alert('Poço comprado! Agora você pode coletar água.');
+            showTutorial('welcome');
         }
 
         // Comprar composteira
@@ -1773,6 +2003,7 @@
             document.getElementById('buy-compost-btn').style.display = 'none';
             updateDisplay();
             alert('Composteira comprada! Agora você pode fazer adubo.');
+            showTutorial('buy-compost');
         }
 
         // Comprar campo de grama
@@ -1794,6 +2025,7 @@
             createGrassField();
             updateDisplay();
             alert('Campo de grama comprado! Colete grama para ganhar flores.');
+            showTutorial('buy-grass-field');
         }
 
         // Comprar pasto
@@ -1815,6 +2047,7 @@
             document.getElementById('buy-cow-btn').style.display = 'block';
             updateDisplay();
             alert('Pasto comprado! Agora você pode comprar vacas leiteiras.');
+            showTutorial('buy-pasture');
         }
 
         // Comprar curral de ovelhas
@@ -1856,6 +2089,7 @@
             document.getElementById('buy-dryer-btn').style.display = 'none';
             updateDisplay();
             alert('Secador de grama comprado! Agora você pode secar grama e fazer feno.');
+            showTutorial('buy-dryer');
         }
 
         // Comprar misturador
@@ -1918,6 +2152,7 @@
             document.getElementById('buy-axe-btn').style.display = 'none';
             updateDisplay();
             alert('Machado comprado! Agora você pode coletar troncos da árvore e refinar em lenha.');
+            showTutorial('buy-axe');
         }
 
         // Comprar torradeira
@@ -2060,6 +2295,7 @@
             document.getElementById('buy-bosque-btn').style.display = 'none';
             updateDisplay();
             alert('Bosque comprado! Agora você pode coletar troncos, frutas e galhos para a composteira!');
+            showTutorial('buy-bosque');
         }
 
         // Comprar mais canteiros
@@ -2123,8 +2359,35 @@
             alert('Estufa comprada! Agora você pode plantar no inverno usando os 12 canteiros protegidos.');
         }
 
+        // Comprar lago dos peixes
+        function buyFishingLake() {
+            if (gameState.hasFishingLake) {
+                alert('Você já tem o lago dos peixes!');
+                return;
+            }
+            
+            if (gameState.money < 250) {
+                alert('Dinheiro insuficiente!');
+                return;
+            }
+            
+            gameState.money -= 250;
+            gameState.hasFishingLake = true;
+            document.getElementById('fishing-lake').style.display = 'block';
+            document.getElementById('buy-fishing-lake-btn').style.display = 'none';
+            document.getElementById('buy-fishing-rod-btn').style.display = 'block';
+            spawnFish(); // Criar peixes no lago
+            updateDisplay();
+            alert('Lago dos Peixes comprado! Agora você pode comprar uma vara de pesca para pescar.');
+        }
+
         // Comprar vara de pesca
         function buyFishingRod() {
+            if (!gameState.hasFishingLake) {
+                alert('Você precisa comprar o Lago dos Peixes primeiro!');
+                return;
+            }
+            
             if (gameState.hasFishingRod) {
                 alert('Você já tem uma vara de pesca!');
                 return;
@@ -2140,7 +2403,7 @@
             gameState.fishingRodUses = 0;
             document.getElementById('buy-fishing-rod-btn').style.display = 'none';
             updateDisplay();
-            alert('Vara de pesca comprada! Agora você pode pescar no lago (4 peixes por dia, 10s cada).');
+            alert('Vara de pesca comprada! Agora você pode pescar no lago (4 peixes por dia, 3s cada).');
         }
 
         // Sistema de peixes interativos
@@ -2195,6 +2458,11 @@
                 return;
             }
             
+            if (!gameState.hasFishingLake) {
+                alert('Você precisa comprar o Lago dos Peixes primeiro!');
+                return;
+            }
+            
             if (!gameState.hasFishingRod) {
                 alert('Você precisa comprar uma vara de pesca primeiro!');
                 return;
@@ -2218,7 +2486,7 @@
             // Marcar peixe como sendo pescado
             fish.caught = true;
             gameState.isFishing = true;
-            gameState.energy = Math.max(0, gameState.energy - 1);
+            gameState.energy = Math.max(0, gameState.energy - 0.5); // Perde 0.5 pontos (0.5% de 100)
             gameState.fishingRodUses++;
             
             // Criar efeito de ondulação
@@ -2567,7 +2835,7 @@
             
             const plot = gameState.greenhousePlots[gameState.selectedGreenhousePlot];
             if (!plot.fertilized) {
-                gameState.energy = Math.max(0, gameState.energy - 1);
+                gameState.energy = Math.max(0, gameState.energy - 0.5); // Perde 0.5 pontos (0.5% de 100)
                 gameState.fertilizer -= 1;
                 plot.fertilized = true;
                 updateGreenhousePlotDisplay(gameState.selectedGreenhousePlot);
@@ -2633,7 +2901,7 @@
             }
             
             if (!plot.watered) {
-                gameState.energy = Math.max(0, gameState.energy - 1);
+                gameState.energy = Math.max(0, gameState.energy - 0.5); // Perde 0.5 pontos (0.5% de 100)
                 gameState.water--;
                 plot.watered = true;
                 startGreenhouseGrowth(gameState.selectedGreenhousePlot);
@@ -2663,27 +2931,11 @@
                 return;
             }
             
-            gameState.energy = Math.max(0, gameState.energy - 1);
+            gameState.energy = Math.max(0, gameState.energy - 0.5); // Perde 0.5 pontos (0.5% de 100)
             const seed = seeds[plot.seedType];
             
-            // Adicionar ao inventário
-            switch(plot.seedType) {
-                case 3: // Milho
-                    gameState.inventory[3] = (gameState.inventory[3] || 0) + 1;
-                    break;
-                case 4: // Trigo
-                    gameState.inventory[4] = (gameState.inventory[4] || 0) + 1;
-                    break;
-                case 5: // Café
-                    gameState.inventory[5] = (gameState.inventory[5] || 0) + 1;
-                    break;
-                case 9: // Uva
-                    gameState.inventory[9] = (gameState.inventory[9] || 0) + 1;
-                    break;
-                default:
-                    gameState.inventory[plot.seedType] = (gameState.inventory[plot.seedType] || 0) + 1;
-                    break;
-            }
+            // Adicionar ao inventário (TODOS vão para o inventário)
+            gameState.inventory[plot.seedType] = (gameState.inventory[plot.seedType] || 0) + 1;
             
             // Resetar canteiro
             plot.fertilized = false;
@@ -2699,7 +2951,7 @@
             
             updateGreenhousePlotDisplay(gameState.selectedGreenhousePlot);
             updateDisplay();
-            alert(`${seed.name} colhido da estufa! 🏠`);
+            alert(`1x ${seed.name} colhido da estufa e adicionado ao celeiro! 🏠`);
         }
 
         // Iniciar crescimento na estufa
@@ -2813,8 +3065,40 @@
             gameState.hasHorse = true;
             document.getElementById('horse-stable').style.display = 'block';
             document.getElementById('buy-horse-btn').style.display = 'none';
+            document.getElementById('buy-order-panel-btn').style.display = 'block';
             updateDisplay();
-            alert('Duque comprado! Alimente-o com 1 maçã por dia e dê frutas para aumentar a amizade.');
+            alert('Duque comprado! Alimente-o com 1 maçã por dia e dê frutas para aumentar a amizade. Agora você pode comprar o Painel de Pedidos!');
+        }
+
+        // Comprar Painel de Pedidos
+        function buyOrderPanel() {
+            if (gameState.hasOrderPanel) {
+                alert('Você já tem o painel de pedidos!');
+                return;
+            }
+            
+            if (!gameState.hasHorse) {
+                alert('Você precisa ter o Duque primeiro para fazer entregas!');
+                return;
+            }
+            
+            if (gameState.money < 500) {
+                alert('Dinheiro insuficiente!');
+                return;
+            }
+            
+            gameState.money -= 500;
+            gameState.hasOrderPanel = true;
+            document.getElementById('order-panel').style.display = 'block';
+            document.getElementById('buy-order-panel-btn').style.display = 'none';
+            
+            // Gerar primeiros pedidos automaticamente
+            setTimeout(() => {
+                generateNewOrder();
+            }, 2000);
+            
+            updateDisplay();
+            alert('Painel de Pedidos comprado! Agora você pode receber pedidos de clientes e usar o Duque para entregar. Seu primeiro pedido chegará em breve!');
         }
 
         // Interagir com cachorro
@@ -2999,14 +3283,284 @@
             }
         }
 
+        // Sistema de Pedidos
+        const orderItems = [
+            { name: 'Leite', emoji: '🥛', type: 'product', key: 'milk', basePrice: 15 },
+            { name: 'Ovos', emoji: '🥚', type: 'product', key: 'eggs', basePrice: 12 },
+            { name: 'Queijo', emoji: '🧀', type: 'product', key: 'cheese', basePrice: 60 },
+            { name: 'Pão', emoji: '🍞', type: 'product', key: 'bread', basePrice: 35 },
+            { name: 'Mel', emoji: '🍯', type: 'product', key: 'honey', basePrice: 35 },
+            { name: 'Batata', emoji: '🥔', type: 'inventory', key: 0, basePrice: 25 },
+            { name: 'Tomate', emoji: '🍅', type: 'inventory', key: 1, basePrice: 30 },
+            { name: 'Cenoura', emoji: '🥕', type: 'inventory', key: 2, basePrice: 20 },
+            { name: 'Maçã', emoji: '🍎', type: 'fruit', key: 'apples', basePrice: 10 },
+            { name: 'Banana', emoji: '🍌', type: 'fruit', key: 'bananas', basePrice: 8 }
+        ];
+
+        const customerNames = [
+            'Maria', 'João', 'Ana', 'Pedro', 'Carla',
+            'Roberto', 'Lucia', 'Carlos', 'Fernanda', 'Marcos'
+        ];
+
+        // Gerar novo pedido
+        function generateNewOrder() {
+            if (!gameState.hasOrderPanel) {
+                alert('Você precisa comprar o painel de pedidos primeiro!');
+                return;
+            }
+            
+            if (gameState.orders.length >= 3) {
+                alert('Você já tem o máximo de pedidos ativos (3)!');
+                return;
+            }
+            
+            // Gerar pedidos até completar 3
+            while (gameState.orders.length < 3) {
+                // Selecionar cliente aleatório
+                const customer = customerNames[Math.floor(Math.random() * customerNames.length)];
+                
+                // Selecionar 1-3 itens aleatórios
+                const numItems = Math.floor(Math.random() * 3) + 1;
+                const selectedItems = [];
+                
+                for (let i = 0; i < numItems; i++) {
+                    const item = orderItems[Math.floor(Math.random() * orderItems.length)];
+                    const quantity = Math.floor(Math.random() * 3) + 1; // 1-3 unidades
+                    const bonus = Math.floor(Math.random() * 20) + 10; // 10-30% de bônus
+                    const totalPrice = Math.floor(item.basePrice * quantity * (1 + bonus/100));
+                    
+                    selectedItems.push({
+                        ...item,
+                        quantity: quantity,
+                        totalPrice: totalPrice
+                    });
+                }
+                
+                // Criar pedido
+                const order = {
+                    id: Date.now() + gameState.orders.length, // ID único
+                    customer: customer,
+                    items: selectedItems,
+                    totalValue: selectedItems.reduce((sum, item) => sum + item.totalPrice, 0),
+                    status: 'pending', // pending, ready, delivering, completed
+                    deliveryTime: 60 // 1 minuto para entregar
+                };
+                
+                gameState.orders.push(order);
+                createOrderElement(order);
+            }
+            
+            updateOrdersDisplay();
+            alert(`📋 Novos pedidos chegaram! Agora você tem ${gameState.orders.length} pedidos ativos.`);
+        }
+
+        // Criar elemento visual do pedido
+        function createOrderElement(order) {
+            const ordersContainer = document.getElementById('orders-container');
+            const orderElement = document.createElement('div');
+            orderElement.className = 'order-item';
+            orderElement.id = `order-${order.id}`;
+            
+            const itemsHtml = order.items.map(item => 
+                `<div class="order-item-detail">${item.quantity}x ${item.emoji} ${item.name}</div>`
+            ).join('');
+            
+            orderElement.innerHTML = `
+                <div class="order-header">
+                    <span>👤 ${order.customer}</span>
+                    <span>💰 ${order.totalValue} moedas</span>
+                </div>
+                <div class="order-items">
+                    ${itemsHtml}
+                </div>
+                <div style="text-align: center; margin-bottom: 6px;">
+                    <div id="order-status-${order.id}" style="font-size: 0.7rem; color: #666;">Aguardando decisão</div>
+                </div>
+                <div class="order-actions">
+                    <button class="order-btn" onclick="prepareOrder(${order.id})" id="prepare-btn-${order.id}">✅ Aceitar Pedido</button>
+                    <button class="order-btn" onclick="rejectOrder(${order.id})" id="reject-btn-${order.id}" style="background: #FF6347;">❌ Recusar</button>
+                    <button class="order-btn" onclick="deliverOrder(${order.id})" id="deliver-btn-${order.id}" style="display: none;">🐴 Entregar com Duque</button>
+                </div>
+            `;
+            
+            ordersContainer.appendChild(orderElement);
+        }
+
+        // Recusar pedido
+        function rejectOrder(orderId) {
+            const orderIndex = gameState.orders.findIndex(o => o.id === orderId);
+            if (orderIndex === -1) return;
+            
+            const order = gameState.orders[orderIndex];
+            gameState.orders.splice(orderIndex, 1);
+            
+            const orderElement = document.getElementById(`order-${orderId}`);
+            if (orderElement) {
+                orderElement.remove();
+            }
+            
+            updateOrdersDisplay();
+            alert(`❌ Pedido de ${order.customer} foi recusado.`);
+        }
+
+        // Preparar pedido
+        function prepareOrder(orderId) {
+            const order = gameState.orders.find(o => o.id === orderId);
+            if (!order || order.status !== 'pending') return;
+            
+            // Verificar se tem todos os itens
+            let canPrepare = true;
+            const missingItems = [];
+            
+            for (const item of order.items) {
+                let available = 0;
+                
+                if (item.type === 'product') {
+                    available = gameState.products[item.key] || 0;
+                } else if (item.type === 'inventory') {
+                    available = gameState.inventory[item.key] || 0;
+                } else if (item.type === 'fruit') {
+                    available = gameState[item.key] || 0;
+                }
+                
+                if (available < item.quantity) {
+                    canPrepare = false;
+                    missingItems.push(`${item.quantity - available}x ${item.name}`);
+                }
+            }
+            
+            if (!canPrepare) {
+                alert(`Itens insuficientes! Faltam: ${missingItems.join(', ')}`);
+                return;
+            }
+            
+            // Consumir itens
+            for (const item of order.items) {
+                if (item.type === 'product') {
+                    gameState.products[item.key] -= item.quantity;
+                } else if (item.type === 'inventory') {
+                    gameState.inventory[item.key] -= item.quantity;
+                } else if (item.type === 'fruit') {
+                    gameState[item.key] -= item.quantity;
+                }
+            }
+            
+            // Atualizar status do pedido
+            order.status = 'ready';
+            const orderElement = document.getElementById(`order-${orderId}`);
+            orderElement.classList.add('ready');
+            
+            document.getElementById(`prepare-btn-${orderId}`).style.display = 'none';
+            document.getElementById(`reject-btn-${orderId}`).style.display = 'none';
+            document.getElementById(`deliver-btn-${orderId}`).style.display = 'block';
+            document.getElementById(`order-status-${orderId}`).textContent = 'Pronto para entrega!';
+            
+            updateDisplay();
+            updateOrdersDisplay();
+            alert('📦 Pedido preparado! Agora use o Duque para entregar.');
+        }
+
+        // Entregar pedido
+        function deliverOrder(orderId) {
+            const order = gameState.orders.find(o => o.id === orderId);
+            if (!order || order.status !== 'ready') return;
+            
+            if (!gameState.hasHorse) {
+                alert('Você precisa ter o Duque para fazer entregas!');
+                return;
+            }
+            
+            if (!gameState.horse.fed || !gameState.horse.fedToday) {
+                alert('Duque precisa estar alimentado para trabalhar!');
+                return;
+            }
+            
+            // Iniciar entrega
+            order.status = 'delivering';
+            const orderElement = document.getElementById(`order-${orderId}`);
+            orderElement.classList.remove('ready');
+            orderElement.classList.add('delivering');
+            
+            document.getElementById(`deliver-btn-${orderId}`).style.display = 'none';
+            document.getElementById(`order-status-${orderId}`).textContent = 'Duque está entregando...';
+            document.getElementById('horse-delivery-status').textContent = 'Entregando pedido';
+            
+            // Timer de entrega (1 minuto)
+            let deliveryTime = order.deliveryTime;
+            const deliveryInterval = setInterval(() => {
+                deliveryTime--;
+                document.getElementById(`order-status-${orderId}`).textContent = `Duque entregando: ${deliveryTime}s`;
+                
+                if (deliveryTime <= 0) {
+                    completeOrder(orderId);
+                    clearInterval(deliveryInterval);
+                }
+            }, 1000);
+            
+            updateOrdersDisplay();
+        }
+
+        // Completar pedido
+        function completeOrder(orderId) {
+            const orderIndex = gameState.orders.findIndex(o => o.id === orderId);
+            if (orderIndex === -1) return;
+            
+            const order = gameState.orders[orderIndex];
+            
+            // Receber pagamento
+            gameState.money += order.totalValue;
+            gameState.completedOrders++;
+            
+            // Remover pedido
+            gameState.orders.splice(orderIndex, 1);
+            const orderElement = document.getElementById(`order-${orderId}`);
+            if (orderElement) {
+                orderElement.remove();
+            }
+            
+            document.getElementById('horse-delivery-status').textContent = 'Disponível';
+            
+            updateDisplay();
+            updateOrdersDisplay();
+            
+            alert(`✅ Pedido entregue! Você recebeu ${order.totalValue} moedas. Duque está de volta!`);
+            
+            // Gerar novos pedidos automaticamente após 30 segundos se não tiver 3
+            setTimeout(() => {
+                if (gameState.orders.length < 3) {
+                    generateNewOrder();
+                }
+            }, 30000);
+        }
+
+
+
+        // Atualizar display dos pedidos
+        function updateOrdersDisplay() {
+            if (!gameState.hasOrderPanel) return;
+            
+            document.getElementById('active-orders').textContent = gameState.orders.length;
+            document.getElementById('completed-orders').textContent = gameState.completedOrders;
+            
+            // Habilitar/desabilitar botão de gerar pedido
+            const generateBtn = document.getElementById('generate-order-btn');
+            if (gameState.orders.length >= 3) {
+                generateBtn.disabled = true;
+                generateBtn.textContent = '📋 Máximo de pedidos atingido';
+            } else {
+                generateBtn.disabled = false;
+                generateBtn.textContent = '📋 Gerar 3 Pedidos';
+            }
+        }
+
         // Interagir com cavalo
         function interactWithHorse() {
-            if (!gameState.hasHorseStable) return;
+            if (!gameState.hasHorse) return;
             
             const horse = gameState.horse;
             
             if (!horse.fed && !horse.fedToday) {
-                feedHorse();
+                giveHayToHorse();
             } else if (horse.friendship >= 100 && horse.canRide) {
                 rideHorse();
             } else {
@@ -3291,6 +3845,7 @@
                     clearInterval(gameState.dryingTimer);
                     updateDisplay();
                     alert(`${amount} gramas foram secas com sucesso!`);
+                    showTutorial('make-hay');
                 }
             };
             
@@ -3599,6 +4154,7 @@
             createCowElement(cowId);
             updateDisplay();
             alert('Vaca leiteira comprada! Alimente-a para produzir leite (3 leites por dia + 1 esterco diário).');
+            showTutorial('buy-cow');
         }
 
         // Comprar galinha
@@ -4076,7 +4632,7 @@
                 return;
             }
             
-            gameState.energy = Math.max(0, gameState.energy - 1);
+            gameState.energy = Math.max(0, gameState.energy - 0.5); // Perde 0.5 pontos (0.5% de 100)
             gameState.logs += 5;
             gameState.axeUses += 1;
             gameState.canCollectLogs = false;
@@ -4089,8 +4645,10 @@
                 gameState.compostMaterials.branches += 1;
                 gameState.logsCollectedCount = 0;
                 alert('Troncos coletados! +5 troncos + 1 galho para composteira!');
+                showTutorial('collect-logs');
             } else {
                 alert('Troncos coletados! +5 troncos (próxima coleta amanhã)');
+                showTutorial('collect-logs');
             }
             
             // Verificar se o machado quebrou
@@ -4134,7 +4692,7 @@
                 return;
             }
             
-            gameState.energy = Math.max(0, gameState.energy - 1);
+            gameState.energy = Math.max(0, gameState.energy - 0.5); // Perde 0.5 pontos (0.5% de 100)
             gameState.apples += 5;
             gameState.canCollectApples = false;
             gameState.lastAppleCollection = gameState.dayCount;
@@ -4172,7 +4730,7 @@
                 return;
             }
             
-            gameState.energy = Math.max(0, gameState.energy - 1);
+            gameState.energy = Math.max(0, gameState.energy - 0.5); // Perde 0.5 pontos (0.5% de 100)
             gameState.bananas += 4;
             gameState.canCollectBananas = false;
             gameState.lastBananaCollection = gameState.dayCount;
@@ -4210,7 +4768,7 @@
                 return;
             }
             
-            gameState.energy = Math.max(0, gameState.energy - 1);
+            gameState.energy = Math.max(0, gameState.energy - 0.5); // Perde 0.5 pontos (0.5% de 100)
             gameState.oranges += 4;
             gameState.canCollectOranges = false;
             gameState.lastOrangeCollection = gameState.dayCount;
@@ -4552,19 +5110,7 @@
             alert('Mel coletado! +2 potes de mel (próxima coleta em 2 dias)');
         }
 
-        // Coletar materiais para compostagem
-        function collectMaterials() {
-            if (!gameState.hasCompost) {
-                alert('Você precisa comprar a composteira primeiro!');
-                return;
-            }
-            
-            gameState.compostMaterials.flowers += Math.floor(Math.random() * 3) + 1;
-            gameState.compostMaterials.branches += Math.floor(Math.random() * 3) + 1;
-            gameState.compostMaterials.manure += Math.floor(Math.random() * 4) + 1;
-            updateDisplay();
-            alert('Materiais coletados!');
-        }
+
 
         // Fazer adubo
         function makeCompost() {
@@ -4605,6 +5151,7 @@
                     clearInterval(gameState.compostTimer);
                     updateDisplay();
                     alert('Compostagem completa! +8 adubos');
+                    showTutorial('make-compost');
                 }
             };
             
@@ -4637,12 +5184,13 @@
             
             const plot = gameState.plots[gameState.selectedPlot];
             if (!plot.fertilized) {
-                gameState.energy = Math.max(0, gameState.energy - 1);
+                gameState.energy = Math.max(0, gameState.energy - 0.5); // Perde 0.5 pontos (0.5% de 100)
                 gameState.fertilizer -= 1;
                 plot.fertilized = true;
                 updatePlotDisplay(gameState.selectedPlot);
                 updateDisplay();
                 alert('Solo adubado!');
+                showTutorial('fertilize-plot');
             } else {
                 alert('Este canteiro já está adubado!');
             }
@@ -4689,7 +5237,7 @@
             }
             
             // Consumir energia
-            gameState.energy = Math.max(0, gameState.energy - 5);
+            gameState.energy = Math.max(0, gameState.energy - 0.5); // Perde 0.5 pontos (0.5% de 100)
             
             plot.planted = true;
             plot.seedType = gameState.selectedSeed;
@@ -4707,6 +5255,7 @@
             }
             
             alert(message);
+            showTutorial('plant-seed');
         }
 
         // Regar canteiro
@@ -4738,13 +5287,14 @@
             }
             
             if (!plot.watered) {
-                gameState.energy = Math.max(0, gameState.energy - 1);
+                gameState.energy = Math.max(0, gameState.energy - 0.5); // Perde 0.5 pontos (0.5% de 100)
                 gameState.water--;
                 plot.watered = true;
                 startGrowth(gameState.selectedPlot);
                 updatePlotDisplay(gameState.selectedPlot);
                 updateDisplay();
                 alert('Planta regada! Crescerá em 1 minuto.');
+                showTutorial('water-plant');
             } else {
                 alert('Esta planta já foi regada!');
             }
@@ -4769,6 +5319,11 @@
                     plot.readyToHarvest = true;
                     clearInterval(plot.growthTimer);
                     plot.growthTimer = null;
+                    
+                    // Trigger tutorial when plant is ready to harvest
+                    if (tutorialState.active && tutorialState.currentStep === tutorialState.steps.findIndex(step => step.id === 'wait-growth')) {
+                        showTutorial('wait-growth');
+                    }
                 }
                 
                 updatePlotDisplay(plotIndex);
@@ -4799,7 +5354,7 @@
             }
             
             // Consumir energia
-            gameState.energy = Math.max(0, gameState.energy - 1);
+            gameState.energy = Math.max(0, gameState.energy - 0.5); // Perde 0.5 pontos (0.5% de 100)
             
             const seed = seeds[plot.seedType];
             
@@ -4810,34 +5365,12 @@
             if (gameState.currentSeason === 1) { // Verão - 2 frutos por canteiro
                 quantity = 2;
                 bonusMessage = ' ☀️ Bônus do verão: +1 fruto extra!';
+            } else if (gameState.currentSeason === 0) { // Primavera - estrelinhas nos frutos
+                bonusMessage = ' ✨ Fruto da primavera: vale mais na venda!';
             }
             
-            // Adicionar produtos específicos ao inventário
-            switch(plot.seedType) {
-                case 3: // Milho
-                    gameState.inventory[3] = (gameState.inventory[3] || 0) + quantity;
-                    break;
-                case 4: // Trigo
-                    gameState.inventory[4] = (gameState.inventory[4] || 0) + quantity;
-                    break;
-                case 5: // Café (grãos crus vão para inventário)
-                    gameState.inventory[5] = (gameState.inventory[5] || 0) + quantity;
-                    break;
-                case 9: // Uva
-                    gameState.inventory[9] = (gameState.inventory[9] || 0) + quantity;
-                    break;
-                default:
-                    // Outras plantas vão para o inventário normal
-                    gameState.inventory[plot.seedType] = (gameState.inventory[plot.seedType] || 0) + quantity;
-                    break;
-            }
-            
-            // Bônus de valor na primavera
-            if (gameState.currentSeason === 0) { // Primavera
-                const bonusValue = Math.floor(seed.sellPrice * 0.5); // 50% de bônus
-                gameState.money += bonusValue;
-                bonusMessage = ` ✨ Bônus da primavera: +${bonusValue} moedas extras!`;
-            }
+            // Adicionar produtos ao inventário (TODOS vão para o inventário agora)
+            gameState.inventory[plot.seedType] = (gameState.inventory[plot.seedType] || 0) + quantity;
             
             // Resetar canteiro
             plot.fertilized = false;
@@ -4853,7 +5386,8 @@
             
             updatePlotDisplay(gameState.selectedPlot);
             updateDisplay();
-            alert(`${seed.name} colhido e adicionado ao inventário!${bonusMessage}`);
+            alert(`${quantity}x ${seed.name} colhido e adicionado ao celeiro!${bonusMessage}`);
+            showTutorial('harvest-plant');
         }
 
         // Coletar água
@@ -4873,7 +5407,7 @@
                 return;
             }
             
-            gameState.energy = Math.max(0, gameState.energy - 1);
+            gameState.energy = Math.max(0, gameState.energy - 0.5); // Perde 0.5 pontos (0.5% de 100)
             gameState.water += 4;
             updateDisplay();
             
@@ -4883,6 +5417,8 @@
             setTimeout(() => {
                 well.style.transform = 'scale(1)';
             }, 200);
+            
+            showTutorial('collect-water');
         }
 
         // Alimentar avatar
@@ -4905,8 +5441,20 @@
                 return;
             }
             
+            if (gameState.isNight) {
+                alert('O avatar está dormindo! Aguarde o dia amanhecer.');
+                return;
+            }
+            
             gameState.isResting = true;
             let restTime = 300; // 5 minutos em segundos
+            
+            // Desabilitar botão de descansar
+            const restBtn = document.getElementById('rest-btn');
+            if (restBtn) {
+                restBtn.disabled = true;
+                restBtn.textContent = 'Descansando...';
+            }
             
             const restInterval = setInterval(() => {
                 restTime--;
@@ -4914,17 +5462,27 @@
                 
                 if (restTime <= 0) {
                     gameState.isResting = false;
-                    gameState.energy = 100;
+                    gameState.energy = Math.min(100, gameState.energy + 50); // Recupera 50% (50 pontos de 100)
+                    
+                    // Reabilitar botão
+                    if (restBtn) {
+                        restBtn.disabled = false;
+                        restBtn.textContent = '💤 Descansar (5 min)';
+                    }
+                    
                     clearInterval(restInterval);
                     updateDisplay();
-                    alert('Você descansou e recuperou toda a energia!');
+                    alert('Você descansou e recuperou 50% da energia!');
                 }
             }, 1000);
         }
 
         // Atualizar status do avatar
         function updateAvatarStatus(status) {
-            document.getElementById('avatar-status').textContent = status;
+            const avatarStatus = document.getElementById('avatar-status');
+            if (avatarStatus) {
+                avatarStatus.textContent = status;
+            }
         }
 
         // Criar campo de grama
@@ -4960,6 +5518,7 @@
                 gameState.grassCollected = 0;
                 gameState.compostMaterials.flowers++;
                 alert('Você ganhou uma flor! 🌸');
+                showTutorial('collect-grass');
             }
             
             // Atualizar visual
@@ -5257,7 +5816,7 @@
                 return;
             }
             
-            gameState.energy = Math.max(0, gameState.energy - 1);
+            gameState.energy = Math.max(0, gameState.energy - 0.5); // Perde 0.5 pontos (0.5% de 100)
             gameState.hay--;
             cow.fed = true;
             
@@ -5273,6 +5832,7 @@
             startCowTimer(cowId, 15);
             updateDisplay();
             alert('Vaca alimentada! +1 esterco adicionado à composteira.');
+            showTutorial('feed-cow');
         }
 
         // Alimentar galinha
@@ -6173,11 +6733,20 @@
                 return;
             }
             
-            const price = seeds[seedIndex].sellPrice;
+            let price = seeds[seedIndex].sellPrice;
+            let bonusMessage = '';
+            
+            // Bônus da primavera: +50% no valor de venda
+            if (gameState.currentSeason === 0) {
+                price = Math.floor(price * 1.5);
+                bonusMessage = ' ✨ (Bônus da primavera: +50%)';
+            }
+            
             gameState.inventory[seedIndex]--;
             gameState.money += price;
             updateDisplay();
-            alert(`${seeds[seedIndex].emoji} vendido por ${price} moedas!`);
+            alert(`${seeds[seedIndex].emoji} vendido por ${price} moedas!${bonusMessage}`);
+            showTutorial('sell-products');
         }
 
         // Vender todos os produtos
@@ -6268,10 +6837,14 @@
             const energyDisplay = document.getElementById('energy-display');
             const avatarDisplay = document.getElementById('avatar-display');
             
-            energyBar.style.width = `${gameState.energy}%`;
-            energyDisplay.textContent = gameState.energy;
+            if (energyBar) {
+                energyBar.style.width = `${gameState.energy}%`;
+            }
+            if (energyDisplay) {
+                energyDisplay.textContent = gameState.energy;
+            }
             
-            // Mudar aparência do avatar baseado na energia
+            // Mudar aparência do avatar baseado na energia (agora de 100)
             if (gameState.isNight) {
                 avatarDisplay.textContent = '😴';
                 updateAvatarStatus('Dormindo... Zzz');
@@ -6472,6 +7045,31 @@
             document.getElementById('broccoli-count').textContent = gameState.inventory[7] || 0;
             document.getElementById('lettuce-count').textContent = gameState.inventory[8] || 0;
             
+            // Atualizar emojis e preços na primavera
+            const vegetableData = [
+                { index: 0, emoji: '🥔', price: 25 },
+                { index: 1, emoji: '🍅', price: 30 },
+                { index: 2, emoji: '🥕', price: 20 },
+                { index: 6, emoji: '🎃', price: 40 },
+                { index: 7, emoji: '🥦', price: 25 },
+                { index: 8, emoji: '🥬', price: 20 }
+            ];
+            
+            vegetableData.forEach(veg => {
+                const emojiElement = document.getElementById(`${['potato', 'tomato', 'carrot', '', '', '', 'pumpkin', 'broccoli', 'lettuce'][veg.index]}-emoji`);
+                const priceElement = document.getElementById(`${['potato', 'tomato', 'carrot', '', '', '', 'pumpkin', 'broccoli', 'lettuce'][veg.index]}-price`);
+                
+                if (emojiElement && priceElement) {
+                    if (gameState.currentSeason === 0) { // Primavera
+                        emojiElement.textContent = `✨${veg.emoji}✨`;
+                        priceElement.textContent = `${Math.floor(veg.price * 1.5)}m`;
+                    } else {
+                        emojiElement.textContent = veg.emoji;
+                        priceElement.textContent = `${veg.price}m`;
+                    }
+                }
+            });
+            
             // Atualizar colmeia
             if (gameState.hasBeehive) {
                 document.getElementById('honey-available').textContent = gameState.honeyAvailable;
@@ -6506,7 +7104,10 @@
             document.getElementById('rod-uses').textContent = gameState.fishingRodUses;
             document.getElementById('fish-caught-today').textContent = gameState.fishCaught;
             
-            // Atualizar inventário de sementes
+            // Atualizar painel de pedidos
+            updateOrdersDisplay();
+            
+            // Atualizar celeiro de sementes
             const inventoryDisplay = document.getElementById('inventory-display');
             inventoryDisplay.innerHTML = '';
             seeds.forEach((seed, index) => {
@@ -6517,8 +7118,15 @@
                     inventoryItem.style.padding = '5px';
                     inventoryItem.style.background = '#F0F8FF';
                     inventoryItem.style.borderRadius = '5px';
+                    
+                    // Adicionar estrelinhas nos frutos da primavera
+                    let displayEmoji = seed.emoji;
+                    if (gameState.currentSeason === 0) { // Primavera
+                        displayEmoji = `✨${seed.emoji}✨`;
+                    }
+                    
                     inventoryItem.innerHTML = `
-                        <div style="font-size: 1rem;">${seed.emoji}</div>
+                        <div style="font-size: 1rem;">${displayEmoji}</div>
                         <div style="font-size: 0.7rem; color: #2F4F4F;">${count}</div>
                     `;
                     inventoryDisplay.appendChild(inventoryItem);
@@ -6541,20 +7149,32 @@
         // Sistema de tempo
         function startGameTimer() {
             setInterval(() => {
-                if (!gameState.isNight) {
-                    gameState.gameTime--;
-                } else {
-                    gameState.gameTime--;
+                // Decrementar tempo
+                gameState.gameTime--;
+                
+                // Atualizar display do tempo
+                const minutes = Math.floor(gameState.gameTime / 60);
+                const seconds = gameState.gameTime % 60;
+                const timeDisplay = document.getElementById('time-display');
+                if (timeDisplay) {
+                    timeDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
                 }
                 
+                // Verificar mudança de período
                 if (gameState.gameTime <= 0) {
                     if (gameState.isNight) {
                         // Fim da noite, começar novo dia
-                        gameState.gameTime = 900; // 15 minutos
+                        gameState.gameTime = 900; // 15 minutos (900 segundos)
                         gameState.isNight = false;
                         gameState.dayCount++;
                         document.body.classList.remove('night');
-                        document.getElementById('day-night').textContent = 'Dia';
+                        const dayNightElement = document.getElementById('day-night');
+                        if (dayNightElement) {
+                            dayNightElement.textContent = 'Dia';
+                        }
+                        
+                        // SALVAMENTO AUTOMÁTICO A CADA NOVO DIA
+                        saveGame();
                         
                         // Reset das vacas para novo dia
                         gameState.cows.forEach(cow => {
@@ -6569,13 +7189,18 @@
                         }
                         
                         // Reset do cachorro para novo dia
-                        gameState.dog.fedToday = false;
-                        gameState.dog.fed = false;
-                        gameState.dog.treasureReady = false;
-                        gameState.dog.currentTreasure = null;
-                        gameState.treasuresFoundToday = 0;
-                        document.getElementById('collect-treasure-btn').style.display = 'none';
-                        updateDogDisplay();
+                        if (gameState.hasDog) {
+                            gameState.dog.fedToday = false;
+                            gameState.dog.fed = false;
+                            gameState.dog.treasureReady = false;
+                            gameState.dog.currentTreasure = null;
+                            gameState.treasuresFoundToday = 0;
+                            const collectBtn = document.getElementById('collect-treasure-btn');
+                            if (collectBtn) {
+                                collectBtn.style.display = 'none';
+                            }
+                            updateDogDisplay();
+                        }
                         
                         // Verificar se pode coletar frutas e troncos (diariamente)
                         if (gameState.dayCount - gameState.lastAppleCollection >= 1) {
@@ -6600,6 +7225,13 @@
                         // Recuperar energia completa no novo dia
                         gameState.energy = 100;
                         gameState.isResting = false;
+                        
+                        // Reabilitar botão de descansar se estava desabilitado
+                        const restBtn = document.getElementById('rest-btn');
+                        if (restBtn) {
+                            restBtn.disabled = false;
+                            restBtn.textContent = '💤 Descansar (5 min)';
+                        }
                         
                         // Atualizar ovelhas para novo dia (dia sim, dia não)
                         gameState.sheep.forEach((sheep, index) => {
@@ -6635,21 +7267,25 @@
                         if (gameState.dayCount % 2 === 0) {
                             setTimeout(() => {
                                 startRain();
-                            }, 5000); // Chove 5 segundos após começar o dia
+                            }, 30000); // Chove 30 segundos após começar o dia
                         }
+                        
+                        alert(`🌅 Novo dia começou! Dia ${gameState.dayCount}`);
                     } else {
                         // Fim do dia, começar noite
-                        gameState.gameTime = 60; // 1 minuto
+                        gameState.gameTime = 60; // 1 minuto (60 segundos)
                         gameState.isNight = true;
                         document.body.classList.add('night');
-                        document.getElementById('day-night').textContent = 'Noite';
+                        const dayNightElement = document.getElementById('day-night');
+                        if (dayNightElement) {
+                            dayNightElement.textContent = 'Noite';
+                        }
+                        alert('🌙 A noite chegou! O avatar está dormindo...');
                     }
                 }
                 
-                const minutes = Math.floor(gameState.gameTime / 60);
-                const seconds = gameState.gameTime % 60;
-                document.getElementById('time-display').textContent = 
-                    `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                // Atualizar display sempre
+                updateDisplay();
             }, 1000);
         }
 
@@ -6669,8 +7305,10 @@
             
             // Mostrar indicador de chuva ou neve
             const indicator = document.getElementById('weather-indicator');
-            indicator.textContent = isWinter ? '❄️' : '🌧️';
-            indicator.classList.add('active');
+            if (indicator) {
+                indicator.textContent = isWinter ? '❄️' : '🌧️';
+                indicator.classList.add('active');
+            }
             
             // Criar gotas de chuva ou neve
             if (isWinter) {
@@ -6693,17 +7331,25 @@
                 alert('Neve! ❄️ Que paisagem linda, mas as plantas não podem crescer no inverno.');
             }
             
-            // Parar chuva/neve após 2 minutos
+            // Parar chuva/neve após 1 minuto
             setTimeout(() => {
                 gameState.isRaining = false;
                 document.body.classList.remove('raining');
-                indicator.classList.remove('active');
-                document.getElementById('rain-drops').innerHTML = '';
-            }, 120000);
+                if (indicator) {
+                    indicator.classList.remove('active');
+                }
+                const rainDrops = document.getElementById('rain-drops');
+                if (rainDrops) {
+                    rainDrops.innerHTML = '';
+                }
+            }, 60000); // 1 minuto (60000ms)
         }
 
         function createRainDrops() {
             const rainContainer = document.getElementById('rain-drops');
+            if (!rainContainer) return;
+            
+            rainContainer.innerHTML = ''; // Limpar gotas anteriores
             
             for (let i = 0; i < 100; i++) {
                 const drop = document.createElement('div');
@@ -6717,6 +7363,9 @@
 
         function createSnowFlakes() {
             const rainContainer = document.getElementById('rain-drops');
+            if (!rainContainer) return;
+            
+            rainContainer.innerHTML = ''; // Limpar flocos anteriores
             
             for (let i = 0; i < 50; i++) {
                 const snowflake = document.createElement('div');
@@ -6754,8 +7403,326 @@
             }, 7200000); // Muda estação a cada 2 horas
         }
 
+        // Sistema de Tutorial
+        let tutorialState = {
+            active: false,
+            currentStep: 0,
+            steps: [
+                {
+                    id: 'welcome',
+                    title: '🌾 Bem-vindo à Real Farm!',
+                    message: 'Olá! Sou seu guia nesta fazenda. Vou te ensinar tudo sobre agricultura. Primeiro, vamos comprar o poço para ter água!',
+                    highlight: '#buy-well-btn',
+                    action: 'buyWell'
+                },
+                {
+                    id: 'collect-water',
+                    title: '💧 Coletando Água',
+                    message: 'Perfeito! Agora clique no poço para coletar água. Você precisa de água para regar as plantas.',
+                    highlight: '#well',
+                    action: 'collectWater'
+                },
+                {
+                    id: 'buy-compost',
+                    title: '🗑️ Comprando Composteira',
+                    message: 'Ótimo! Agora vamos comprar a composteira para fazer adubo. Clique no botão da composteira.',
+                    highlight: '#buy-compost-btn',
+                    action: 'buyCompost'
+                },
+                {
+                    id: 'buy-grass-field',
+                    title: '🌿 Campo de Grama',
+                    message: 'Excelente! Agora compre o campo de grama. Você coletará grama para fazer flores para o adubo.',
+                    highlight: '#buy-grass-btn',
+                    action: 'buyGrassField'
+                },
+                {
+                    id: 'collect-grass',
+                    title: '🌿 Coletando Grama',
+                    message: 'Perfeito! Agora clique nas gramas verdes para coletá-las. A cada 4 gramas você ganha 1 flor!',
+                    highlight: '#grass-grid',
+                    action: 'collectGrass'
+                },
+                {
+                    id: 'buy-bosque',
+                    title: '🌳 Comprando Bosque',
+                    message: 'Ótimo! Agora vamos comprar o bosque para coletar galhos. Clique no botão do bosque.',
+                    highlight: '#buy-bosque-btn',
+                    action: 'buyBosque'
+                },
+                {
+                    id: 'buy-axe',
+                    title: '🪓 Comprando Machado',
+                    message: 'Agora compre o machado para poder coletar troncos e galhos das árvores.',
+                    highlight: '#buy-axe-btn',
+                    action: 'buyAxe'
+                },
+                {
+                    id: 'collect-logs',
+                    title: '🪵 Coletando Troncos',
+                    message: 'Perfeito! Clique na árvore para coletar troncos. Você também ganhará galhos para a composteira!',
+                    highlight: '#tree',
+                    action: 'collectLogs'
+                },
+                {
+                    id: 'buy-pasture',
+                    title: '🐄 Comprando Pasto',
+                    message: 'Excelente! Agora vamos comprar o pasto para ter vacas que produzem esterco.',
+                    highlight: '#buy-pasture-btn',
+                    action: 'buyPasture'
+                },
+                {
+                    id: 'buy-cow',
+                    title: '🐄 Comprando Vaca',
+                    message: 'Ótimo! Agora compre uma vaca. Ela produzirá esterco quando alimentada.',
+                    highlight: '#buy-cow-btn',
+                    action: 'buyCow'
+                },
+                {
+                    id: 'buy-dryer',
+                    title: '☀️ Comprando Secador',
+                    message: 'Perfeito! Compre o secador de grama para fazer feno e alimentar a vaca.',
+                    highlight: '#buy-dryer-btn',
+                    action: 'buyDryer'
+                },
+                {
+                    id: 'make-hay',
+                    title: '🟨 Fazendo Feno',
+                    message: 'Agora vamos fazer feno! Primeiro seque a grama, depois transforme em feno.',
+                    highlight: '#drying-panel',
+                    action: 'startDrying'
+                },
+                {
+                    id: 'feed-cow',
+                    title: '🐄 Alimentando Vaca',
+                    message: 'Ótimo! Agora clique na vaca para alimentá-la com feno. Ela produzirá esterco!',
+                    highlight: '#cows-container',
+                    action: 'feedCow'
+                },
+                {
+                    id: 'make-compost',
+                    title: '🌿 Fazendo Adubo',
+                    message: 'Perfeito! Agora você tem todos os materiais. Faça adubo na composteira!',
+                    highlight: '#compost-panel',
+                    action: 'makeCompost'
+                },
+                {
+                    id: 'select-seed',
+                    title: '🌱 Selecionando Semente',
+                    message: 'Excelente! Agora selecione uma semente para plantar. Clique em qualquer semente.',
+                    highlight: '#seeds-grid',
+                    action: 'selectSeed'
+                },
+                {
+                    id: 'fertilize-plot',
+                    title: '🌿 Adubando Solo',
+                    message: 'Ótimo! Agora clique em um canteiro para adubá-lo. Este é o primeiro passo do plantio.',
+                    highlight: '#plots-grid',
+                    action: 'fertilizePlot'
+                },
+                {
+                    id: 'plant-seed',
+                    title: '🌱 Plantando Semente',
+                    message: 'Perfeito! Clique no mesmo canteiro novamente para plantar a semente.',
+                    highlight: '#plots-grid',
+                    action: 'plantSeed'
+                },
+                {
+                    id: 'water-plant',
+                    title: '💧 Regando Planta',
+                    message: 'Excelente! Agora clique no canteiro mais uma vez para regar a planta.',
+                    highlight: '#plots-grid',
+                    action: 'waterPlot'
+                },
+                {
+                    id: 'wait-growth',
+                    title: '⏰ Aguardando Crescimento',
+                    message: 'Perfeito! A planta está crescendo. Aguarde 1 minuto e ela estará pronta para colher!',
+                    highlight: '#plots-grid',
+                    action: 'wait'
+                },
+                {
+                    id: 'harvest-plant',
+                    title: '🌾 Colhendo Planta',
+                    message: 'Ótimo! A planta está pronta! Clique no canteiro para colher e adicionar ao celeiro.',
+                    highlight: '#plots-grid',
+                    action: 'harvestPlot'
+                },
+                {
+                    id: 'sell-products',
+                    title: '💰 Vendendo na Quitanda',
+                    message: 'Excelente! Agora venda seus produtos na quitanda para ganhar dinheiro!',
+                    highlight: '.panel:has(h3:contains("Quitanda"))',
+                    action: 'sellInventoryItem'
+                },
+                {
+                    id: 'tutorial-complete',
+                    title: '🎉 Tutorial Completo!',
+                    message: 'Parabéns! Você aprendeu o básico da fazenda: plantar, cuidar dos animais e vender produtos. Continue explorando e comprando novos itens no mercadinho!',
+                    highlight: null,
+                    action: 'complete'
+                }
+            ]
+        };
+
+        // Mostrar tutorial
+        function showTutorial(stepId = null) {
+            if (!tutorialState.active) return;
+            
+            // Se um stepId específico foi fornecido, encontrar o passo
+            if (stepId) {
+                const stepIndex = tutorialState.steps.findIndex(step => step.id === stepId);
+                if (stepIndex !== -1 && stepIndex === tutorialState.currentStep) {
+                    // Avançar para o próximo passo
+                    tutorialState.currentStep++;
+                }
+            }
+            
+            // Verificar se o tutorial terminou
+            if (tutorialState.currentStep >= tutorialState.steps.length) {
+                completeTutorial();
+                return;
+            }
+            
+            const currentStep = tutorialState.steps[tutorialState.currentStep];
+            
+            // Remover destaque anterior
+            document.querySelectorAll('.tutorial-highlight').forEach(el => {
+                el.classList.remove('tutorial-highlight');
+            });
+            
+            // Adicionar destaque ao elemento atual
+            if (currentStep.highlight) {
+                const element = document.querySelector(currentStep.highlight);
+                if (element) {
+                    element.classList.add('tutorial-highlight');
+                }
+            }
+            
+            // Mostrar mensagem do tutorial
+            showTutorialMessage(currentStep.title, currentStep.message);
+        }
+
+        // Mostrar mensagem do tutorial
+        function showTutorialMessage(title, message) {
+            // Remover popup anterior se existir
+            const existingPopup = document.getElementById('tutorial-popup');
+            if (existingPopup) {
+                existingPopup.remove();
+            }
+            
+            // Criar popup do tutorial
+            const popup = document.createElement('div');
+            popup.id = 'tutorial-popup';
+            popup.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: linear-gradient(135deg, #4CAF50, #45a049);
+                color: white;
+                padding: 20px;
+                border-radius: 15px;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                z-index: 10000;
+                max-width: 400px;
+                text-align: center;
+                font-family: Arial, sans-serif;
+                border: 3px solid #FFD700;
+            `;
+            
+            popup.innerHTML = `
+                <h3 style="margin: 0 0 15px 0; font-size: 1.3rem;">${title}</h3>
+                <p style="margin: 0 0 20px 0; line-height: 1.4;">${message}</p>
+                <button onclick="closeTutorialMessage()" style="
+                    background: #FFD700;
+                    color: #2F4F4F;
+                    border: none;
+                    padding: 10px 20px;
+                    border-radius: 8px;
+                    font-weight: bold;
+                    cursor: pointer;
+                    font-size: 1rem;
+                ">Entendi! ✓</button>
+            `;
+            
+            document.body.appendChild(popup);
+        }
+
+        // Fechar mensagem do tutorial
+        function closeTutorialMessage() {
+            const popup = document.getElementById('tutorial-popup');
+            if (popup) {
+                popup.remove();
+            }
+        }
+
+        // Completar tutorial
+        function completeTutorial() {
+            tutorialState.active = false;
+            tutorialState.currentStep = 0;
+            
+            // Remover todos os destaques
+            document.querySelectorAll('.tutorial-highlight').forEach(el => {
+                el.classList.remove('tutorial-highlight');
+            });
+            
+            // Fechar popup se existir
+            closeTutorialMessage();
+            
+            // Salvar que o tutorial foi completado
+            localStorage.setItem('realFarmTutorialCompleted', 'true');
+            
+            // Mostrar mensagem de conclusão
+            setTimeout(() => {
+                alert('🎉 Tutorial completo! Agora você sabe como jogar Real Farm. Continue explorando e se divertindo!');
+            }, 500);
+        }
+
+        // Iniciar tutorial para novos jogadores
+        function startTutorial() {
+            // Verificar se o tutorial já foi completado
+            const tutorialCompleted = localStorage.getItem('realFarmTutorialCompleted');
+            
+            // Verificar se é um novo jogador (sem save ou com valores iniciais) e não completou tutorial
+            if (!tutorialCompleted && gameState.money <= 200 && gameState.water === 10 && gameState.fertilizer === 50 && gameState.dayCount === 1 && !gameState.hasWell) {
+                tutorialState.active = true;
+                tutorialState.currentStep = 0;
+                
+                // Mostrar primeiro passo do tutorial
+                setTimeout(() => {
+                    showTutorial();
+                }, 2000); // Aguardar 2 segundos para o jogo carregar
+            }
+        }
+
+        // Adicionar CSS para destaque do tutorial
+        const tutorialCSS = document.createElement('style');
+        tutorialCSS.textContent = `
+            .tutorial-highlight {
+                animation: tutorialGlow 2s infinite;
+                position: relative;
+                z-index: 1000;
+            }
+            
+            @keyframes tutorialGlow {
+                0%, 100% { 
+                    box-shadow: 0 0 20px #FFD700, 0 0 30px #FFD700, 0 0 40px #FFD700;
+                    transform: scale(1);
+                }
+                50% { 
+                    box-shadow: 0 0 30px #FFA500, 0 0 40px #FFA500, 0 0 50px #FFA500;
+                    transform: scale(1.05);
+                }
+            }
+        `;
+        document.head.appendChild(tutorialCSS);
+
         // Inicializar o jogo quando a página carregar
-        window.onload = initGame;
+        window.onload = function() {
+            initGame();
+            startTutorial();
+        };
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'968aecdc76b4007b',t:'MTc1NDEwOTkyMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'969251e6c1580083',t:'MTc1NDE4NzQ2MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
