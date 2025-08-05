@@ -289,6 +289,7 @@
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 8px;
+            min-height: 120px;
         }
 
         .grass-item, .cow-item, .tree-item, .chicken-item, .pig-item, .sheep-item {
@@ -553,14 +554,23 @@
             </div>
             <button class="save-btn" onclick="saveGame()">💾 Salvar</button>
         </div>
-        <div class="avatar-panel" id="avatarPanel">
-            <h4>👨‍🌾 Você</h4>
-            <div class="energy-bar">
-                <div class="energy-fill" id="energyFill" style="width: 100%"></div>
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <div class="mailbox-container" style="cursor: pointer;" onclick="openMailbox()">
+                <div style="font-size: 32px; position: relative;">
+                    📮
+                    <span id="mailNotification" style="position: absolute; top: -8px; right: -8px; background: red; color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 12px; display: none; text-align: center; line-height: 16px;">!</span>
+                </div>
+                <div style="font-size: 12px; text-align: center; color: white;">Correios</div>
             </div>
-            <div>Energia: <span id="energyText">200/200</span></div>
-            <button class="control-btn" onclick="rest()" style="margin: 5px;">😴 Descansar (5 min)</button>
-            <button class="control-btn" onclick="openMeals()" style="margin: 5px;">🍽️ Comer</button>
+            <div class="avatar-panel" id="avatarPanel">
+                <h4>👨‍🌾 Você</h4>
+                <div class="energy-bar">
+                    <div class="energy-fill" id="energyFill" style="width: 100%"></div>
+                </div>
+                <div>Energia: <span id="energyText">200/200</span></div>
+                <button class="control-btn" onclick="rest()" style="margin: 5px;">😴 Descansar (5 min)</button>
+                <button class="control-btn" onclick="openMeals()" style="margin: 5px;">🍽️ Comer</button>
+            </div>
         </div>
     </header>
 
@@ -650,7 +660,8 @@
                 mill: false,
                 coffeeRoaster: false,
                 juiceMachine: false,
-                greenhouse: false
+                greenhouse: false,
+                beehive: false
             },
             grassField: [],
             cows: [],
@@ -683,6 +694,17 @@
             producerFair: { items: [], lastPayout: 0 },
             craftTable: { making: null, startTime: 0 },
             bonfire: { lit: false, litTime: 0 },
+            mailbox: { 
+                messages: [], 
+                lastNewspaper: 0, 
+                lastMotivationalMessage: 0,
+                hasUnread: false
+            },
+            beehive: {
+                bees: 3,
+                lastHarvest: 0,
+                honeyReady: false
+            },
             greenhousePlots: [],
             lake: [
                 { caught: false, regrowTime: 0 },
@@ -734,7 +756,9 @@
             'grapeJuice': { emoji: '🍇', name: 'Suco de Uva', price: 90 },
             'pearlNecklace': { emoji: '📿', name: 'Colar de Pérolas', price: 500 },
             'emeraldRing': { emoji: '💍', name: 'Anel de Esmeralda', price: 300 },
-            'flowerBouquet': { emoji: '💐', name: 'Buquê de Flores', price: 200 }
+            'flowerBouquet': { emoji: '💐', name: 'Buquê de Flores', price: 200 },
+            'bread': { emoji: '🍞', name: 'Pão', price: 120 },
+            'honey': { emoji: '🍯', name: 'Pote de Mel', price: 50 }
         };
 
         // Initialize game
@@ -853,27 +877,28 @@
 
             const marketItems = [
                 { name: 'Poço de Água', emoji: '🪣', price: 50, id: 'well', condition: () => !gameState.structures.well },
+                { name: 'Machado + Cortar Lenha', emoji: '🪓', price: 50, id: 'axeAndWoodCutter', condition: () => !gameState.structures.woodCutter },
+                { name: 'Bosque', emoji: '🌳', price: 150, id: 'forest', condition: () => !gameState.structures.forest },
                 { name: 'Fogão', emoji: '🔥', price: 250, id: 'stove', condition: () => !gameState.structures.stove },
                 { name: 'Campo de Grama', emoji: '🌿', price: 100, id: 'grassField', condition: () => !gameState.structures.grassField },
                 { name: 'Secador de Grama', emoji: '🌾', price: 120, id: 'dryer', condition: () => !gameState.structures.dryer },
                 { name: 'Pasto de Vacas', emoji: '🐄', price: 200, id: 'cowPasture', condition: () => !gameState.structures.cowPasture },
-                { name: 'Bosque', emoji: '🌳', price: 150, id: 'forest', condition: () => !gameState.structures.forest },
                 { name: 'Composteira', emoji: '♻️', price: 80, id: 'composter', condition: () => !gameState.structures.composter },
+                { name: 'Vara de Pesca', emoji: '🎣', price: 75, id: 'fishingRod', condition: () => !gameState.inventory.fishingRod },
+                { name: 'Colmeia', emoji: '🐝', price: 300, id: 'beehive', condition: () => !gameState.structures.beehive },
                 { name: 'Misturador', emoji: '🥄', price: 90, id: 'mixer', condition: () => !gameState.structures.mixer },
-                { name: 'Queijeira', emoji: '🧀', price: 180, id: 'cheesemaker', condition: () => !gameState.structures.cheesemaker },
-                { name: 'Torra de Café', emoji: '☕', price: 220, id: 'coffeeRoaster', condition: () => !gameState.structures.coffeeRoaster },
-                { name: 'Máquina de Suco', emoji: '🍇', price: 160, id: 'juiceMachine', condition: () => !gameState.structures.juiceMachine },
-                { name: 'Moinho', emoji: '🌾', price: 200, id: 'mill', condition: () => !gameState.structures.mill },
                 { name: 'Galinheiro', emoji: '🐔', price: 110, id: 'chickenCoop', condition: () => !gameState.structures.chickenCoop },
                 { name: 'Chiqueiro', emoji: '🐷', price: 130, id: 'pigPen', condition: () => !gameState.structures.pigPen },
                 { name: 'Curral das Ovelhas', emoji: '🐑', price: 150, id: 'sheepPen', condition: () => !gameState.structures.sheepPen },
+                { name: 'Torra de Café', emoji: '☕', price: 220, id: 'coffeeRoaster', condition: () => !gameState.structures.coffeeRoaster },
+                { name: 'Máquina de Suco', emoji: '🍇', price: 160, id: 'juiceMachine', condition: () => !gameState.structures.juiceMachine },
+                { name: 'Queijeira', emoji: '🧀', price: 180, id: 'cheesemaker', condition: () => !gameState.structures.cheesemaker },
                 { name: 'Máquina de Fiar', emoji: '🧵', price: 180, id: 'spinner', condition: () => !gameState.structures.spinner },
-                { name: 'Ração para Cachorro', emoji: '🦴', price: 30, id: 'dogFood', condition: () => true },
+                { name: 'Moinho', emoji: '🌾', price: 200, id: 'mill', condition: () => !gameState.structures.mill },
                 { name: 'Vacina', emoji: '💉', price: 40, id: 'vaccine', condition: () => true },
-                { name: 'Machado + Cortar Lenha', emoji: '🪓', price: 50, id: 'axeAndWoodCutter', condition: () => !gameState.structures.woodCutter },
-                { name: 'Vara de Pesca', emoji: '🎣', price: 75, id: 'fishingRod', condition: () => !gameState.inventory.fishingRod },
-                { name: 'Picareta', emoji: '⛏️', price: 100, id: 'pickaxe', condition: () => true },
+                { name: 'Ração para Cachorro', emoji: '🦴', price: 30, id: 'dogFood', condition: () => true },
                 { name: 'Casinha da Mocinha', emoji: '🏠', price: 500, id: 'dogHouse', condition: () => !gameState.structures.dogHouse },
+                { name: 'Picareta', emoji: '⛏️', price: 100, id: 'pickaxe', condition: () => true },
                 { name: 'Baia do Duque', emoji: '🐎', price: 1000, id: 'horseStable', condition: () => !gameState.structures.horseStable },
                 { name: 'Estufa', emoji: '🏠', price: 800, id: 'greenhouse', condition: () => gameState.season === 3 && !gameState.structures.greenhouse },
                 { name: 'Manta para Duque', emoji: '🧥', price: 150, id: 'horseCoat', condition: () => gameState.season === 3 && gameState.structures.horseStable && !gameState.horse.hasWarmClothes },
@@ -1373,6 +1398,8 @@
                     // Juice machine is ready to use
                 } else if (itemId === 'greenhouse') {
                     initializeGreenhouse();
+                } else if (itemId === 'beehive') {
+                    gameState.beehive.lastHarvest = Date.now();
                 }
                 
                 updateDisplay();
@@ -1514,7 +1541,8 @@
                 'pickaxe': { emoji: '⛏️', name: 'Picareta (usos)' },
                 'flour': { emoji: '🌾', name: 'Farinha' },
                 'coffeeRoasted': { emoji: '☕', name: 'Café Torrado' },
-                'grapeJuice': { emoji: '🍇', name: 'Suco de Uva' }
+                'grapeJuice': { emoji: '🍇', name: 'Suco de Uva' },
+                'bread': { emoji: '🍞', name: 'Pão' }
             };
 
             Object.keys(barnItems).forEach(item => {
@@ -1551,6 +1579,7 @@
             updateCoffeeRoaster();
             updateJuiceMachine();
             updateGreenhouse();
+            updateBeehive();
         }
 
         function updateCheesemaker() {
@@ -1760,6 +1789,137 @@
                     greenhouseGrid.appendChild(plotElement);
                 });
             }
+        }
+
+        function updateBeehive() {
+            const container = document.getElementById('animalsContainer');
+            const existing = document.getElementById('beehiveStructure');
+            if (existing) existing.remove();
+
+            if (gameState.structures.beehive) {
+                const beehive = document.createElement('div');
+                beehive.id = 'beehiveStructure';
+                beehive.className = 'structure';
+                beehive.style.marginBottom = '15px';
+                
+                const timeUntilHarvest = Math.max(0, 180000 - (Date.now() - gameState.beehive.lastHarvest));
+                const canHarvest = timeUntilHarvest === 0;
+                
+                beehive.innerHTML = `
+                    <h4>🐝 Colmeia (Embaixo do Pasto)</h4>
+                    <div style="display: flex; justify-content: center; gap: 10px; margin: 10px 0;">
+                        <span style="font-size: 24px;">🐝</span>
+                        <span style="font-size: 24px;">🐝</span>
+                        <span style="font-size: 24px;">🐝</span>
+                    </div>
+                    <div>Status: ${canHarvest ? 'Mel pronto! 🍯' : `Produzindo... ${Math.ceil(timeUntilHarvest / 1000)}s`}</div>
+                    <button class="control-btn" onclick="harvestHoney()" ${canHarvest ? '' : 'disabled'}>
+                        Coletar 3 Potes de Mel
+                    </button>
+                `;
+                
+                // Position below cow pasture
+                const cowPasture = document.getElementById('cowPastureStructure');
+                if (cowPasture) {
+                    container.insertBefore(beehive, cowPasture.nextSibling);
+                } else {
+                    container.appendChild(beehive);
+                }
+            }
+        }
+
+        function harvestHoney() {
+            if (gameState.structures.beehive) {
+                const timeUntilHarvest = Math.max(0, 180000 - (Date.now() - gameState.beehive.lastHarvest));
+                if (timeUntilHarvest === 0) {
+                    gameState.inventory.honey = (gameState.inventory.honey || 0) + 3;
+                    gameState.beehive.lastHarvest = Date.now();
+                    updateDisplay();
+                    updateBeehive();
+                    updateQuitanda();
+                }
+            }
+        }
+
+        function openMailbox() {
+            if (gameState.mailbox.messages.length === 0) {
+                alert('📮 Caixa de correios vazia! Aguarde por mensagens motivadoras e o Jornal dos Agricultores.');
+                return;
+            }
+
+            let messageList = '📮 CAIXA DE CORREIOS\n\n';
+            gameState.mailbox.messages.forEach((message, index) => {
+                messageList += `${index + 1}. ${message.type === 'newspaper' ? '📰' : '💌'} ${message.title}\n`;
+            });
+            messageList += '\nDigite o número da mensagem para ler:';
+
+            const choice = prompt(messageList);
+            const messageIndex = parseInt(choice) - 1;
+
+            if (messageIndex >= 0 && messageIndex < gameState.mailbox.messages.length) {
+                const message = gameState.mailbox.messages[messageIndex];
+                alert(`${message.type === 'newspaper' ? '📰 JORNAL DOS AGRICULTORES' : '💌 MENSAGEM MOTIVADORA'}\n\n${message.content}`);
+                
+                // Mark as read and remove
+                gameState.mailbox.messages.splice(messageIndex, 1);
+                
+                // Update notification
+                if (gameState.mailbox.messages.length === 0) {
+                    gameState.mailbox.hasUnread = false;
+                    document.getElementById('mailNotification').style.display = 'none';
+                }
+            }
+        }
+
+        function addMotivationalMessage() {
+            const messages = [
+                'Você está fazendo um ótimo trabalho na fazenda! Continue assim! 🌟',
+                'Cada planta que você cultiva torna o mundo mais verde! 🌱',
+                'Seus animais estão felizes e bem cuidados! 🐄❤️',
+                'A paciência é a chave para uma boa colheita! ⏰',
+                'Você é um verdadeiro agricultor! 👨‍🌾',
+                'Suas plantas crescem com amor e dedicação! 💚',
+                'Continue trabalhando duro, a recompensa virá! 💪',
+                'Você está construindo algo incrível! 🏗️'
+            ];
+
+            const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+            gameState.mailbox.messages.push({
+                type: 'motivational',
+                title: 'Mensagem Motivadora',
+                content: randomMessage
+            });
+            
+            gameState.mailbox.hasUnread = true;
+            gameState.mailbox.lastMotivationalMessage = Date.now();
+            document.getElementById('mailNotification').style.display = 'block';
+        }
+
+        function addNewspaper() {
+            const crops = ['Trigo', 'Milho', 'Café', 'Batata', 'Tomate', 'Cenoura', 'Abóbora', 'Brócolis', 'Alface', 'Uva'];
+            const products = ['Leite', 'Ovos', 'Queijo', 'Mel', 'Lã'];
+            
+            const valuableCrop = crops[Math.floor(Math.random() * crops.length)];
+            const valuableProduct = products[Math.floor(Math.random() * products.length)];
+            
+            const newsContent = `🗞️ EDIÇÃO DE HOJE\n\n` +
+                `📈 PRODUTOS EM ALTA:\n` +
+                `• ${valuableCrop} - Demanda aumentou 20%!\n` +
+                `• ${valuableProduct} - Preços em alta no mercado!\n\n` +
+                `🌦️ PREVISÃO DO TEMPO:\n` +
+                `Possibilidade de chuva nas próximas horas.\n\n` +
+                `💡 DICA DO DIA:\n` +
+                `Mantenha seus animais bem alimentados para melhor produção!`;
+
+            gameState.mailbox.messages.push({
+                type: 'newspaper',
+                title: 'Jornal dos Agricultores',
+                content: newsContent
+            });
+            
+            gameState.mailbox.hasUnread = true;
+            gameState.mailbox.lastNewspaper = Date.now();
+            document.getElementById('mailNotification').style.display = 'block';
         }
 
         function handleGreenhousePlotClick(plotIndex) {
@@ -2678,6 +2838,10 @@
                         ${gameState.cookingFish && gameState.cookingFish.isActive ? 'disabled' : totalFish >= 1 && gameState.inventory.wood >= 3 ? '' : 'disabled'}>
                         ${gameState.cookingFish && gameState.cookingFish.isActive ? `Assando peixe... ${Math.ceil((30000 - (Date.now() - gameState.cookingFish.startTime)) / 1000)}s` : 'Peixe (1🐟) - +80% energia'}
                     </button>
+                    <button class="control-btn" onclick="cookMeal('bread')" 
+                        ${gameState.cookingBread && gameState.cookingBread.isActive ? 'disabled' : totalEgg >= 1 && gameState.inventory.milk >= 1 && gameState.inventory.flour >= 1 && gameState.inventory.wood >= 3 ? '' : 'disabled'}>
+                        ${gameState.cookingBread && gameState.cookingBread.isActive ? `Fazendo pão... ${Math.ceil((60000 - (Date.now() - gameState.cookingBread.startTime)) / 1000)}s` : 'Pão no Forno (1🥚 + 1🥛 + 1🌾 + 3🪵) - 1 min'}
+                    </button>
                 `;
                 container.appendChild(stove);
             }
@@ -2751,6 +2915,21 @@
                         consumeIngredient('fish', 1);
                         gameState.inventory.wood -= 3;
                         gameState.cookingFish = {
+                            isActive: true,
+                            startTime: Date.now()
+                        };
+                        canCook = true;
+                    }
+                    break;
+                case 'bread':
+                    woodCost = 3;
+                    const totalEggForBread = (gameState.inventory.egg || 0) + getQuitandaAmount('egg');
+                    if (totalEggForBread >= 1 && gameState.inventory.milk >= 1 && gameState.inventory.flour >= 1 && gameState.inventory.wood >= 3 && (!gameState.cookingBread || !gameState.cookingBread.isActive)) {
+                        consumeIngredient('egg', 1);
+                        gameState.inventory.milk -= 1;
+                        gameState.inventory.flour -= 1;
+                        gameState.inventory.wood -= 3;
+                        gameState.cookingBread = {
                             isActive: true,
                             startTime: Date.now()
                         };
@@ -3303,6 +3482,12 @@
         }
 
         function rest() {
+            // Can't rest when sick
+            if (gameState.avatar.sick) {
+                alert('Você não pode descansar enquanto estiver doente! Tome chá para se curar primeiro.');
+                return;
+            }
+            
             if (gameState.avatar.energy < gameState.avatar.maxEnergy) {
                 // Start 5-minute rest timer
                 const restTime = 5 * 60 * 1000; // 5 minutes in milliseconds
@@ -3358,6 +3543,8 @@
                     gameState.inventory.tea--;
                     gameState.avatar.sick = false;
                     gameState.avatar.sickTime = 0;
+                    // Restore some energy when cured
+                    gameState.avatar.energy = Math.min(gameState.avatar.maxEnergy, gameState.avatar.energy + 50);
                     alert('Você tomou chá e se curou da doença!');
                     updateAvatarDisplay();
                     updateDisplay();
@@ -3576,6 +3763,12 @@
                     gameState.cookingFish.isActive = false;
                 }
 
+                // Bread cooking timer (1 minute)
+                if (gameState.cookingBread && gameState.cookingBread.isActive && Date.now() - gameState.cookingBread.startTime >= 60000) {
+                    gameState.inventory.bread = (gameState.inventory.bread || 0) + 1;
+                    gameState.cookingBread.isActive = false;
+                }
+
                 // Avatar sickness system
                 if (!gameState.avatar.sick) {
                     // First sickness after 15 minutes
@@ -3597,6 +3790,12 @@
                 if (gameState.avatar.sick && Date.now() - gameState.avatar.sickTime > 2000) {
                     gameState.avatar.energy = Math.max(0, gameState.avatar.energy - 1);
                     gameState.avatar.sickTime = Date.now(); // Reset timer
+                    
+                    // Check for death when energy reaches 0
+                    if (gameState.avatar.energy === 0) {
+                        gameOver();
+                        return;
+                    }
                 }
 
                 // Lake fish respawn
@@ -3688,6 +3887,19 @@
                         gameState.horse.hasWarmClothes = false;
                     }
                 }
+
+                // Mailbox messages
+                // Newspaper every 20 minutes (1200000ms)
+                if (Date.now() - gameState.mailbox.lastNewspaper >= 1200000) {
+                    addNewspaper();
+                }
+
+                // Random motivational messages (every 5-15 minutes)
+                const timeSinceLastMotivational = Date.now() - gameState.mailbox.lastMotivationalMessage;
+                const randomInterval = 300000 + Math.random() * 600000; // 5-15 minutes
+                if (timeSinceLastMotivational >= randomInterval) {
+                    addMotivationalMessage();
+                }
                 
                 updateDisplay();
                 updatePlotsDisplay();
@@ -3735,5 +3947,5 @@
 
         window.onload = initGame;
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96a8c07091cf0094',t:'MTc1NDQyMjY3NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96a986f85041007f',t:'MTc1NDQzMDgwNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
