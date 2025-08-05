@@ -1135,7 +1135,7 @@
                             const itemDiv = document.createElement('div');
                             itemDiv.className = 'market-item';
                             itemDiv.innerHTML = `
-                                <span>⭐ ${baseName} (${gameState.inventory[item]})</span>
+                                <span>${seeds[baseName].emoji} ${baseName} (${gameState.inventory[item]})</span>
                                 <span>💰${Math.floor(seeds[baseName].sellPrice * 1.1)}</span>
                             `;
                             itemDiv.onclick = () => sellItem(item, Math.floor(seeds[baseName].sellPrice * 1.1));
@@ -1867,6 +1867,8 @@
                 if (gameState.mailbox.messages.length === 0) {
                     gameState.mailbox.hasUnread = false;
                     document.getElementById('mailNotification').style.display = 'none';
+                } else {
+                    document.getElementById('mailNotification').style.display = 'block';
                 }
             }
         }
@@ -2097,6 +2099,10 @@
         }
 
         function collectGrass(index) {
+            if (gameState.avatar.resting) {
+                alert('Você não pode trabalhar enquanto estiver descansando!');
+                return;
+            }
             if (!gameState.grassField[index].collected && gameState.avatar.energy > 0 && !gameState.avatar.sick) {
                 gameState.grassField[index].collected = true;
                 gameState.grassField[index].regrowTime = Date.now() + 60000;
@@ -2135,7 +2141,9 @@
                     <h4>🌾 Secador de Grama</h4>
                     <div>Grama armazenada: ${gameState.inventory.grass || 0}</div>
                     <div class="dryer-controls">
-                        <button class="control-btn" onclick="startDrying()" ${gameState.dryingGrass.isActive ? 'disabled' : ''}>
+                        <button class="control-btn" onclick="startDrying()" 
+                            ${gameState.dryingGrass.isActive || gameState.inventory.grass < 4 ? 'disabled' : ''} 
+                            style="background: ${gameState.inventory.grass >= 4 && !gameState.dryingGrass.isActive ? '#4CAF50' : '#CCC'};">
                             Secar Grama (4-8 unidades)
                         </button>
                         <button class="control-btn" onclick="makeHay()" ${gameState.makingHay.isActive || gameState.inventory.driedGrass < 4 ? 'disabled' : ''}>
@@ -2331,6 +2339,9 @@
                             cowItem.innerHTML = '🤒';
                             cowItem.classList.add('animal-sick');
                             cowItem.onclick = () => vaccinateAnimal('cow', i);
+                        } else if (cow.eating && Date.now() < cow.eatTime) {
+                            cowItem.innerHTML = '🍽️';
+                            cowItem.title = 'Comendo';
                         } else if (cow.milking) {
                             cowItem.innerHTML = '🥛';
                             cowItem.onclick = () => milkCow(i);
@@ -2388,8 +2399,8 @@
             if (gameState.inventory.hay > 0 && !gameState.cows[index].fed && !gameState.cows[index].sick) {
                 gameState.inventory.hay--;
                 gameState.cows[index].fed = true;
-                gameState.cows[index].milking = true;
-                gameState.cows[index].milkTime = Date.now() + 30000;
+                gameState.cows[index].eating = true;
+                gameState.cows[index].eatTime = Date.now() + 10000; // 10 seconds to eat
                 gameState.inventory.manure = (gameState.inventory.manure || 0) + 1;
                 updateDisplay();
                 updateCowPasture();
@@ -2452,9 +2463,10 @@
                 gameState.inventory.egg += 3;
                 chicken.laying = false;
                 chicken.fed = false;
-                chicken.restTime = Date.now() + 180000;
+                chicken.restTime = Date.now() + 180000; // 3 minutes rest
                 updateDisplay();
                 updateChickenCoop();
+                updateQuitanda();
             }
         }
 
@@ -2537,9 +2549,10 @@
                 gameState.inventory.pork++;
                 pig.producing = false;
                 pig.fed = false;
-                pig.restTime = Date.now() + 180000;
+                pig.restTime = Date.now() + 180000; // 3 minutes rest
                 updateDisplay();
                 updatePigPen();
+                updateQuitanda();
             }
         }
 
@@ -2621,6 +2634,7 @@
                 sheep.restTime = Date.now() + 180000; // 3 minutes rest
                 updateDisplay();
                 updateSheepPen();
+                updateQuitanda();
             }
         }
 
@@ -2775,8 +2789,8 @@
                         <button class="control-btn" onclick="feedHorse()" ${gameState.inventory.hay < 2 || !canEat ? 'disabled' : ''}>
                             ${canEat ? 'Dar Feno (2 unidades)' : `Aguardar ${Math.ceil((300000 - (Date.now() - gameState.horse.lastFed)) / 60000)} min`}
                         </button>
-                        <button class="control-btn" onclick="giveApple()" ${gameState.inventory.apple < 1 || !canEat ? 'disabled' : ''}>
-                            Dar Maçã 🍎
+                        <button class="control-btn" onclick="giveApple()" ${gameState.inventory.apple < 1 || !canEat || (gameState.horse.lastApple && Date.now() - gameState.horse.lastApple < 300000) ? 'disabled' : ''}>
+                            ${gameState.horse.lastApple && Date.now() - gameState.horse.lastApple < 300000 ? `Aguardar ${Math.ceil((300000 - (Date.now() - gameState.horse.lastApple)) / 60000)} min` : 'Dar Maçã 🍎'}
                         </button>
                         ${gameState.horse.friendship >= 100 && canWork ? '<div>Duque está pronto para trabalhar! 🚚</div>' : ''}
                         ${gameState.season === 3 && !gameState.horse.hasWarmClothes ? '<div style="color: red; font-size: 12px;">❄️ Precisa de manta para trabalhar no inverno!</div>' : ''}
@@ -2813,8 +2827,8 @@
                     
                     <h5>Receitas do Fogão (2 lenhas):</h5>
                     <button class="control-btn" onclick="cookMeal('tea')" 
-                        ${gameState.cookingTea && gameState.cookingTea.isActive ? 'disabled' : gameState.inventory.herb >= 2 && gameState.inventory.wood >= 2 ? '' : 'disabled'}>
-                        ${gameState.cookingTea && gameState.cookingTea.isActive ? `Fazendo chá... ${Math.ceil((10000 - (Date.now() - gameState.cookingTea.startTime)) / 1000)}s` : 'Chá (2 Ervas) - Cura doença'}
+                        ${gameState.cookingTea && gameState.cookingTea.isActive ? 'disabled' : gameState.inventory.herb >= 2 && gameState.water >= 1 && gameState.inventory.wood >= 2 ? '' : 'disabled'}>
+                        ${gameState.cookingTea && gameState.cookingTea.isActive ? `Fazendo chá... ${Math.ceil((10000 - (Date.now() - gameState.cookingTea.startTime)) / 1000)}s` : 'Chá (1💧 + 2🌿) - Cura doença'}
                     </button>
                     <button class="control-btn" onclick="cookMeal('salad')" 
                         ${totalTomato >= 1 && totalLettuce >= 1 && totalBroccoli >= 1 && gameState.inventory.wood >= 2 ? '' : 'disabled'}>
@@ -2853,8 +2867,9 @@
             
             switch (mealType) {
                 case 'tea':
-                    if (gameState.inventory.herb >= 2 && gameState.inventory.wood >= 2 && (!gameState.cookingTea || !gameState.cookingTea.isActive)) {
+                    if (gameState.inventory.herb >= 2 && gameState.water >= 1 && gameState.inventory.wood >= 2 && (!gameState.cookingTea || !gameState.cookingTea.isActive)) {
                         gameState.inventory.herb -= 2;
+                        gameState.water -= 1;
                         gameState.inventory.wood -= 2;
                         gameState.cookingTea = {
                             isActive: true,
@@ -3297,15 +3312,18 @@
             if (gameState.inventory.hay >= 2) {
                 gameState.inventory.hay -= 2;
                 gameState.horse.friendship = Math.min(gameState.horse.friendship + 5, 100);
+                gameState.inventory.manure = (gameState.inventory.manure || 0) + 1;
                 updateDisplay();
                 updateHorseStable();
             }
         }
 
         function giveApple() {
-            if (gameState.inventory.apple > 0) {
+            const canEatApple = !gameState.horse.lastApple || Date.now() - gameState.horse.lastApple >= 300000; // 5 minutes
+            if (gameState.inventory.apple > 0 && canEatApple) {
                 gameState.inventory.apple--;
                 gameState.horse.friendship = Math.min(gameState.horse.friendship + 15, 100);
+                gameState.horse.lastApple = Date.now();
                 
                 // Show hearts animation
                 const horseStable = document.getElementById('horseStableStructure');
@@ -3317,6 +3335,8 @@
                 
                 updateDisplay();
                 updateHorseStable();
+            } else if (!canEatApple) {
+                alert('Duque só pode comer uma maçã a cada 5 minutos!');
             }
         }
 
@@ -3493,6 +3513,10 @@
                 const restTime = 5 * 60 * 1000; // 5 minutes in milliseconds
                 const startTime = Date.now();
                 
+                // Mark avatar as resting
+                gameState.avatar.resting = true;
+                gameState.avatar.restStartTime = startTime;
+                
                 // Disable rest button during rest
                 const restBtn = document.querySelector('button[onclick="rest()"]');
                 restBtn.disabled = true;
@@ -3517,6 +3541,8 @@
                     if (progress >= 1) {
                         // Rest complete - recover 50% energy
                         gameState.avatar.energy = Math.min(gameState.avatar.maxEnergy, gameState.avatar.energy + Math.floor(gameState.avatar.maxEnergy * 0.5));
+                        gameState.avatar.resting = false;
+                        gameState.avatar.restStartTime = 0;
                         clearInterval(gameState.restInterval);
                         gameState.restInterval = null;
                         restBtn.disabled = false;
@@ -3691,6 +3717,15 @@
                         }
                     });
                 }
+
+                // Check cow eating completion
+                gameState.cows.forEach(cow => {
+                    if (cow.eating && Date.now() >= cow.eatTime) {
+                        cow.eating = false;
+                        cow.milking = true;
+                        cow.milkTime = Date.now(); // Ready to milk immediately after eating
+                    }
+                });
 
                 // Update all production timers
                 if (gameState.dryingGrass.isActive && Date.now() - gameState.dryingGrass.startTime >= 30000) {
@@ -3947,5 +3982,5 @@
 
         window.onload = initGame;
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96a986f85041007f',t:'MTc1NDQzMDgwNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96a9f6f765b80094',t:'MTc1NDQzNTM5My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
