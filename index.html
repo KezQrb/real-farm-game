@@ -1118,7 +1118,6 @@
             
             // All inventory items organized by category
             const categories = {
-                'Produtos da Fazenda': {},
                 'Frutas': {},
                 'Produtos Animais': {},
                 'Minerais e Tesouros': {},
@@ -1126,12 +1125,10 @@
                 'Comidas Prontas': {}
             };
             
-            // Categorize items
+            // Categorize items (excluding farm products that are now in barn)
             Object.keys(gameState.inventory).forEach(item => {
                 if (gameState.inventory[item] > 0) {
-                    if (seeds[item] || item.endsWith('_spring')) {
-                        categories['Produtos da Fazenda'][item] = gameState.inventory[item];
-                    } else if (['apple', 'orange', 'banana'].includes(item)) {
+                    if (['apple', 'orange', 'banana'].includes(item)) {
                         categories['Frutas'][item] = gameState.inventory[item];
                     } else if (['milk', 'egg', 'rawChicken', 'pork', 'yarn', 'cheese'].includes(item)) {
                         categories['Produtos Animais'][item] = gameState.inventory[item];
@@ -1180,7 +1177,6 @@
         
         function getCategoryEmoji(categoryName) {
             const emojis = {
-                'Produtos da Fazenda': '🌾',
                 'Frutas': '🍎',
                 'Produtos Animais': '🐄',
                 'Minerais e Tesouros': '💎',
@@ -1441,7 +1437,7 @@
                 } else if (itemId === 'forest') {
                     initializeForest();
                 } else if (itemId === 'dogHouse') {
-                    gameState.dog = { friendship: 0, lastFed: 0, hasEaten: false };
+                    gameState.dog = { friendship: 0, lastFed: 0, lastBoneFed: 0, hasEaten: false, hasFed: false, lastBoneGiven: false };
                 } else if (itemId === 'horseStable') {
                     gameState.horse = { friendship: 0, lastFed: 0, hasEaten: false };
                     generateOrders();
@@ -1585,7 +1581,22 @@
             const barn = document.getElementById('barn');
             barn.innerHTML = '';
             
-            const barnItems = {
+            // Farm products section
+            const farmProducts = {
+                'Trigo': { emoji: '🌾', name: 'Trigo' },
+                'Milho': { emoji: '🌽', name: 'Milho' },
+                'Café': { emoji: '🔴', name: 'Café' },
+                'Batata': { emoji: '🥔', name: 'Batata' },
+                'Tomate': { emoji: '🍅', name: 'Tomate' },
+                'Cenoura': { emoji: '🥕', name: 'Cenoura' },
+                'Abóbora': { emoji: '🎃', name: 'Abóbora' },
+                'Brócolis': { emoji: '🥦', name: 'Brócolis' },
+                'Alface': { emoji: '🥬', name: 'Alface' },
+                'Uva': { emoji: '🍇', name: 'Uva' }
+            };
+            
+            // Other items section
+            const otherItems = {
                 'hay': { emoji: '🌾', name: 'Feno' },
                 'wood': { emoji: '🪵', name: 'Lenha' },
                 'chickenFeed': { emoji: '🌾', name: 'Ração Galinha' },
@@ -1610,14 +1621,50 @@
                 'bread': { emoji: '🍞', name: 'Pão' }
             };
 
-            Object.keys(barnItems).forEach(item => {
-                if (gameState.inventory[item] > 0) {
-                    const itemDiv = document.createElement('div');
-                    itemDiv.style.cssText = 'display: flex; justify-content: space-between; padding: 5px; background: #F0F8FF; margin: 2px 0; border-radius: 5px;';
-                    itemDiv.innerHTML = `<span>${barnItems[item].emoji} ${barnItems[item].name}</span><span>${gameState.inventory[item]}</span>`;
-                    barn.appendChild(itemDiv);
+            // Show farm products first
+            const hasFarmProducts = Object.keys(farmProducts).some(item => gameState.inventory[item] > 0);
+            if (hasFarmProducts) {
+                const farmSection = document.createElement('div');
+                farmSection.innerHTML = '<h4 style="color: #8B4513; margin-bottom: 8px; font-size: 14px;">🌾 Produtos da Fazenda</h4>';
+                barn.appendChild(farmSection);
+                
+                Object.keys(farmProducts).forEach(item => {
+                    if (gameState.inventory[item] > 0) {
+                        const itemDiv = document.createElement('div');
+                        itemDiv.style.cssText = 'display: flex; justify-content: space-between; padding: 5px; background: #F0F8FF; margin: 2px 0; border-radius: 5px;';
+                        itemDiv.innerHTML = `<span>${farmProducts[item].emoji} ${farmProducts[item].name}</span><span>${gameState.inventory[item]}</span>`;
+                        barn.appendChild(itemDiv);
+                    }
+                });
+            }
+
+            // Show other items
+            const hasOtherItems = Object.keys(otherItems).some(item => gameState.inventory[item] > 0);
+            if (hasOtherItems) {
+                if (hasFarmProducts) {
+                    const separator = document.createElement('div');
+                    separator.style.cssText = 'height: 1px; background: #DDD; margin: 10px 0;';
+                    barn.appendChild(separator);
                 }
-            });
+                
+                const otherSection = document.createElement('div');
+                otherSection.innerHTML = '<h4 style="color: #8B4513; margin-bottom: 8px; font-size: 14px;">📦 Outros Itens</h4>';
+                barn.appendChild(otherSection);
+                
+                Object.keys(otherItems).forEach(item => {
+                    if (gameState.inventory[item] > 0) {
+                        const itemDiv = document.createElement('div');
+                        itemDiv.style.cssText = 'display: flex; justify-content: space-between; padding: 5px; background: #F0F8FF; margin: 2px 0; border-radius: 5px;';
+                        itemDiv.innerHTML = `<span>${otherItems[item].emoji} ${otherItems[item].name}</span><span>${gameState.inventory[item]}</span>`;
+                        barn.appendChild(itemDiv);
+                    }
+                });
+            }
+            
+            // Show empty message if no items
+            if (!hasFarmProducts && !hasOtherItems) {
+                barn.innerHTML = '<div style="text-align: center; color: #666; padding: 20px;">Celeiro vazio</div>';
+            }
         }
 
         function updateAllStructures() {
@@ -1715,13 +1762,14 @@
         function makeFlour() {
             const totalWheat = gameState.inventory.Trigo || 0;
             if (totalWheat >= 4 && !gameState.makingFlour.isActive) {
-                consumeIngredient('Trigo', 4);
+                gameState.inventory.Trigo -= 4;
                 gameState.makingFlour = {
                     isActive: true,
                     startTime: Date.now()
                 };
                 updateDisplay();
                 updateMill();
+                updateQuitanda();
             }
         }
 
@@ -1755,7 +1803,7 @@
         function roastCoffee() {
             const totalCoffee = gameState.inventory.Café || 0;
             if (totalCoffee >= 4 && gameState.inventory.wood >= 3 && !gameState.roastingCoffee.isActive) {
-                consumeIngredient('Café', 4);
+                gameState.inventory.Café -= 4;
                 gameState.inventory.wood -= 3;
                 gameState.roastingCoffee = {
                     isActive: true,
@@ -1763,6 +1811,7 @@
                 };
                 updateDisplay();
                 updateCoffeeRoaster();
+                updateQuitanda();
             }
         }
 
@@ -1871,7 +1920,7 @@
                 const canHarvest = timeUntilHarvest === 0;
                 
                 beehive.innerHTML = `
-                    <h4>🐝 Colmeia (Embaixo do Pasto)</h4>
+                    <h4>🐝 Colmeia</h4>
                     <div style="display: flex; justify-content: center; gap: 10px; margin: 10px 0;">
                         <span style="font-size: 24px;">🐝</span>
                         <span style="font-size: 24px;">🐝</span>
@@ -2059,13 +2108,14 @@
         function makeJuice() {
             const totalGrapes = gameState.inventory.Uva || 0;
             if (totalGrapes >= 2 && !gameState.makingJuice.isActive) {
-                consumeIngredient('Uva', 2);
+                gameState.inventory.Uva -= 2;
                 gameState.makingJuice = {
                     isActive: true,
                     startTime: Date.now()
                 };
                 updateDisplay();
                 updateJuiceMachine();
+                updateQuitanda();
             }
         }
 
@@ -2293,13 +2343,7 @@
             return 0;
         }
 
-        // Helper function to consume ingredients from inventory
-        function consumeIngredient(itemName, amount) {
-            const inventoryAmount = gameState.inventory[itemName] || 0;
-            if (inventoryAmount >= amount) {
-                gameState.inventory[itemName] -= amount;
-            }
-        }
+
 
         function updateMixer() {
             const container = document.getElementById('structuresRight');
@@ -2341,14 +2385,15 @@
             const totalWheat = gameState.inventory.Trigo || 0;
             const totalCorn = gameState.inventory.Milho || 0;
             if (totalWheat >= 1 && totalCorn >= 2 && !gameState.makingChickenFeed.isActive) {
-                consumeIngredient('Trigo', 1);
-                consumeIngredient('Milho', 2);
+                gameState.inventory.Trigo -= 1;
+                gameState.inventory.Milho -= 2;
                 gameState.makingChickenFeed = {
                     isActive: true,
                     startTime: Date.now()
                 };
                 updateDisplay();
                 updateMixer();
+                updateQuitanda();
             }
         }
 
@@ -2359,16 +2404,17 @@
             const totalBroccoli = gameState.inventory.Brócolis || 0;
             
             if (totalCorn >= 1 && totalPotato >= 1 && totalCarrot >= 1 && totalBroccoli >= 1 && !gameState.makingPigFeed.isActive) {
-                consumeIngredient('Milho', 1);
-                consumeIngredient('Batata', 1);
-                consumeIngredient('Cenoura', 1);
-                consumeIngredient('Brócolis', 1);
+                gameState.inventory.Milho -= 1;
+                gameState.inventory.Batata -= 1;
+                gameState.inventory.Cenoura -= 1;
+                gameState.inventory.Brócolis -= 1;
                 gameState.makingPigFeed = {
                     isActive: true,
                     startTime: Date.now()
                 };
                 updateDisplay();
                 updateMixer();
+                updateQuitanda();
             }
         }
 
@@ -2778,7 +2824,9 @@
                 const dogDisplay = gameState.season === 3 && gameState.dog.hasWarmClothes ? '🧢🐕' : '🐕';
                 const canWork = gameState.season !== 3 || gameState.dog.hasWarmClothes;
                 const canEat = !gameState.dog.lastFed || Date.now() - gameState.dog.lastFed >= 300000; // 5 minutes
+                const canEatBone = !gameState.dog.lastBoneFed || Date.now() - gameState.dog.lastBoneFed >= 1200000; // 20 minutes
                 const isSearching = gameState.dog.searchingUntil && Date.now() < gameState.dog.searchingUntil;
+                const canSearch = gameState.dog.friendship >= 100 && canWork && !isSearching && gameState.dog.hasFed;
                 
                 dogHouse.innerHTML = `
                     <h4>🏠 Casinha da Mocinha</h4>
@@ -2791,11 +2839,12 @@
                         <button class="control-btn" onclick="feedDog()" ${gameState.inventory.dogFood < 1 || !canEat ? 'disabled' : ''}>
                             ${canEat ? 'Dar Ração' : `Aguardar ${Math.ceil((300000 - (Date.now() - gameState.dog.lastFed)) / 60000)} min`}
                         </button>
-                        <button class="control-btn" onclick="giveBone()" ${gameState.inventory.bone < 1 || !canEat ? 'disabled' : ''}>
-                            Dar Osso 🦴
+                        <button class="control-btn" onclick="giveBone()" ${gameState.inventory.bone < 1 || !canEatBone ? 'disabled' : ''}>
+                            ${canEatBone ? 'Dar Osso 🦴' : `Aguardar ${Math.ceil((1200000 - (Date.now() - gameState.dog.lastBoneFed)) / 60000)} min`}
                         </button>
-                        ${gameState.dog.friendship >= 100 && canWork && !isSearching ? '<button class="control-btn" onclick="findTreasure()">Procurar Tesouro</button>' : ''}
+                        ${canSearch ? '<button class="control-btn" onclick="findTreasure()">Procurar Tesouro</button>' : ''}
                         ${isSearching ? `<div>🔍 Procurando tesouro... ${Math.ceil((gameState.dog.searchingUntil - Date.now()) / 1000)}s</div>` : ''}
+                        ${gameState.dog.friendship >= 100 && !gameState.dog.hasFed ? '<div style="color: orange; font-size: 12px;">🍽️ Precisa ser alimentada para procurar tesouros!</div>' : ''}
                         ${gameState.season === 3 && !gameState.dog.hasWarmClothes ? '<div style="color: red; font-size: 12px;">❄️ Precisa de touca para trabalhar no inverno!</div>' : ''}
                     </div>
                 `;
@@ -2808,6 +2857,7 @@
             if (gameState.inventory.dogFood > 0 && canEat) {
                 gameState.inventory.dogFood--;
                 gameState.dog.lastFed = Date.now();
+                gameState.dog.hasFed = true;
                 // Only ration doesn't increase friendship
                 updateDisplay();
                 updateDogHouse();
@@ -2815,10 +2865,12 @@
         }
 
         function giveBone() {
-            const canEat = !gameState.dog.lastFed || Date.now() - gameState.dog.lastFed >= 300000; // 5 minutes
-            if (gameState.inventory.bone > 0 && canEat) {
+            const canEatBone = !gameState.dog.lastBoneFed || Date.now() - gameState.dog.lastBoneFed >= 1200000; // 20 minutes
+            if (gameState.inventory.bone > 0 && canEatBone) {
                 gameState.inventory.bone--;
-                gameState.dog.lastFed = Date.now();
+                gameState.dog.lastBoneFed = Date.now();
+                gameState.dog.hasFed = true;
+                gameState.dog.lastBoneGiven = true; // Mark that bone was given for treasure hunting
                 gameState.dog.friendship = Math.min(gameState.dog.friendship + 20, 100);
                 
                 // Show hearts animation
@@ -2835,12 +2887,21 @@
         }
 
         function findTreasure() {
-            if (gameState.dog.friendship >= 100) {
+            if (gameState.dog.friendship >= 100 && gameState.dog.hasFed) {
                 gameState.dog.searchingUntil = Date.now() + 180000; // 3 minutes
+                gameState.dog.hasFed = false; // Reset fed status after starting search
                 updateDogHouse();
                 
                 setTimeout(() => {
-                    const treasures = ['CD', 'Bola', 'Sapato', 'Chave'];
+                    // Higher chance for key if bone was given
+                    let treasures;
+                    if (gameState.dog.lastBoneGiven) {
+                        treasures = ['CD', 'Bola', 'Sapato', 'Chave', 'Chave', 'Chave']; // 50% chance for key
+                        gameState.dog.lastBoneGiven = false; // Reset bone bonus
+                    } else {
+                        treasures = ['CD', 'Bola', 'Sapato', 'Chave']; // 25% chance for key
+                    }
+                    
                     const treasure = treasures[Math.floor(Math.random() * treasures.length)];
                     if (treasure === 'Chave') {
                         gameState.inventory.key++;
@@ -2848,6 +2909,10 @@
                         gameState.inventory.treasure++;
                     }
                     alert(`Mocinha encontrou um tesouro: ${treasure}!`);
+                    
+                    // Dog rests for 5 minutes after finding treasure
+                    gameState.dog.lastFed = Date.now();
+                    
                     updateDisplay();
                     updateQuitanda();
                     updateDogHouse();
@@ -2944,8 +3009,8 @@
                         ${gameState.cookingFish && gameState.cookingFish.isActive ? `Assando peixe... ${Math.ceil((30000 - (Date.now() - gameState.cookingFish.startTime)) / 1000)}s` : 'Peixe (1🐟) - +80% energia'}
                     </button>
                     <button class="control-btn" onclick="cookMeal('bread')" 
-                        ${gameState.cookingBread && gameState.cookingBread.isActive ? 'disabled' : totalEgg >= 1 && gameState.inventory.milk >= 1 && gameState.inventory.flour >= 1 && gameState.inventory.wood >= 3 ? '' : 'disabled'}>
-                        ${gameState.cookingBread && gameState.cookingBread.isActive ? `Fazendo pão... ${Math.ceil((60000 - (Date.now() - gameState.cookingBread.startTime)) / 1000)}s` : 'Pão no Forno (1🥚 + 1🥛 + 1 Farinha + 3🪵) - 1 min'}
+                        ${gameState.cookingBread && gameState.cookingBread.isActive ? 'disabled' : totalEgg >= 1 && gameState.inventory.milk >= 1 && gameState.inventory.flour >= 1 ? '' : 'disabled'}>
+                        ${gameState.cookingBread && gameState.cookingBread.isActive ? `Fazendo pão... ${Math.ceil((60000 - (Date.now() - gameState.cookingBread.startTime)) / 1000)}s` : 'Pão no Forno (1🥚 + 1🥛 + 1 Farinha) - 1 min'}
                     </button>
                 `;
                 container.appendChild(stove);
@@ -2974,9 +3039,9 @@
                     const totalLettuce = gameState.inventory.Alface || 0;
                     const totalBroccoli = gameState.inventory.Brócolis || 0;
                     if (totalTomato >= 1 && totalLettuce >= 1 && totalBroccoli >= 1 && gameState.inventory.wood >= 2) {
-                        consumeIngredient('Tomate', 1);
-                        consumeIngredient('Alface', 1);
-                        consumeIngredient('Brócolis', 1);
+                        gameState.inventory.Tomate -= 1;
+                        gameState.inventory.Alface -= 1;
+                        gameState.inventory.Brócolis -= 1;
                         gameState.inventory.wood -= 2;
                         gameState.inventory.salad = (gameState.inventory.salad || 0) + 1;
                         canCook = true;
@@ -2987,9 +3052,9 @@
                     const totalPotato = gameState.inventory.Batata || 0;
                     const totalPumpkin = gameState.inventory.Abóbora || 0;
                     if (totalEgg >= 1 && totalPotato >= 1 && totalPumpkin >= 1 && gameState.inventory.wood >= 2) {
-                        consumeIngredient('egg', 1);
-                        consumeIngredient('Batata', 1);
-                        consumeIngredient('Abóbora', 1);
+                        gameState.inventory.egg -= 1;
+                        gameState.inventory.Batata -= 1;
+                        gameState.inventory.Abóbora -= 1;
                         gameState.inventory.wood -= 2;
                         gameState.inventory.stew = (gameState.inventory.stew || 0) + 1;
                         canCook = true;
@@ -2998,7 +3063,7 @@
                 case 'steak':
                     const totalPork = gameState.inventory.pork || 0;
                     if (totalPork >= 1 && gameState.inventory.wood >= 2) {
-                        consumeIngredient('pork', 1);
+                        gameState.inventory.pork -= 1;
                         gameState.inventory.wood -= 2;
                         gameState.inventory.steak = (gameState.inventory.steak || 0) + 1;
                         canCook = true;
@@ -3008,7 +3073,7 @@
                     woodCost = 3;
                     const totalRawChicken = gameState.inventory.rawChicken || 0;
                     if (totalRawChicken >= 1 && gameState.inventory.wood >= 3) {
-                        consumeIngredient('rawChicken', 1);
+                        gameState.inventory.rawChicken -= 1;
                         gameState.inventory.wood -= 3;
                         gameState.inventory.cookedChicken = (gameState.inventory.cookedChicken || 0) + 1;
                         canCook = true;
@@ -3018,7 +3083,7 @@
                     woodCost = 3;
                     const totalFish = gameState.inventory.fish || 0;
                     if (totalFish >= 1 && gameState.inventory.wood >= 3 && (!gameState.cookingFish || !gameState.cookingFish.isActive)) {
-                        consumeIngredient('fish', 1);
+                        gameState.inventory.fish -= 1;
                         gameState.inventory.wood -= 3;
                         gameState.cookingFish = {
                             isActive: true,
@@ -3028,13 +3093,11 @@
                     }
                     break;
                 case 'bread':
-                    woodCost = 3;
                     const totalEggForBread = gameState.inventory.egg || 0;
-                    if (totalEggForBread >= 1 && gameState.inventory.milk >= 1 && gameState.inventory.flour >= 1 && gameState.inventory.wood >= 3 && (!gameState.cookingBread || !gameState.cookingBread.isActive)) {
-                        consumeIngredient('egg', 1);
+                    if (totalEggForBread >= 1 && gameState.inventory.milk >= 1 && gameState.inventory.flour >= 1 && (!gameState.cookingBread || !gameState.cookingBread.isActive)) {
+                        gameState.inventory.egg -= 1;
                         gameState.inventory.milk -= 1;
                         gameState.inventory.flour -= 1;
-                        gameState.inventory.wood -= 3;
                         gameState.cookingBread = {
                             isActive: true,
                             startTime: Date.now()
@@ -3048,6 +3111,7 @@
                 updateDisplay();
                 updateStove();
                 updateBarn();
+                updateQuitanda();
             }
         }
 
@@ -3232,12 +3296,19 @@
 
         function mineRock(index) {
             if (gameState.inventory.key > 0 && gameState.inventory.pickaxe > 0 && gameState.mine[index].restTime <= Date.now() && gameState.avatar.energy > 0 && !gameState.avatar.sick) {
-                // Use a key to enter mine
-                if (gameState.mine[index].clicks === 0) {
+                // Initialize key usage tracking if not exists
+                if (!gameState.keyUsage) {
+                    gameState.keyUsage = { totalHits: 0, keysUsed: 0 };
+                }
+                
+                // Use a key every 9 hits (3 hits per rock, 3 rocks)
+                if (gameState.keyUsage.totalHits % 9 === 0) {
                     gameState.inventory.key--;
+                    gameState.keyUsage.keysUsed++;
                 }
                 
                 gameState.mine[index].clicks++;
+                gameState.keyUsage.totalHits++;
                 gameState.inventory.pickaxe--; // Use pickaxe
                 
                 // Consume energy (more if sick)
@@ -3250,7 +3321,7 @@
                     return;
                 }
                 
-                // Random gem drop
+                // Random gem drop on every hit
                 const gems = ['emerald', 'ruby', 'sapphire', 'coal'];
                 const randomGem = gems[Math.floor(Math.random() * gems.length)];
                 gameState.inventory[randomGem] = (gameState.inventory[randomGem] || 0) + 1;
@@ -4118,5 +4189,5 @@
 
         window.onload = initGame;
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96ab0734776400a9',t:'MTc1NDQ0NjU0NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96abb89f90bc007f',t:'MTc1NDQ1MzgxMS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
