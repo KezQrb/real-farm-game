@@ -1132,14 +1132,10 @@
                         <button class="buy-btn" onclick="buyWell()">50💰</button>
                     </div>
                     
-                    <!-- 2. Machado -->
-                    <div class="shop-item" id="axeShop">
-                        <span>🪓 Machado + Cortar Lenha</span>
-                        <button class="buy-btn" onclick="buyAxeAndWoodCutting()">100💰</button>
-                    </div>
-                    <div class="shop-item" id="axeOnlyShop" style="display: none;">
-                        <span>🪓 Machado</span>
-                        <button class="buy-btn" onclick="buyAxe()">50💰</button>
+                    <!-- 2. Machado + Cortador de Lenha -->
+                    <div class="shop-item" id="axeAndWoodCutterShop">
+                        <span>🪓 Machado + Cortador de Lenha</span>
+                        <button class="buy-btn" onclick="buyAxeAndWoodCutter()">150💰</button>
                     </div>
                     
                     <!-- 3. Bosque -->
@@ -1302,11 +1298,7 @@
                         <button class="buy-btn" onclick="buyHorseStable()">1000💰</button>
                     </div>
                     
-                    <!-- Cortador de Lenha (não estava na lista, mantendo no final) -->
-                    <div class="shop-item" id="woodCutterShop">
-                        <span>🪓 Cortador de Lenha</span>
-                        <button class="buy-btn" onclick="buyWoodCutter()">85💰</button>
-                    </div>
+
                     
                     <!-- Greenhouse (Winter only) -->
                     <div class="shop-item" id="greenhouseShop" style="display: none;">
@@ -1344,11 +1336,18 @@
                     <div class="friendship-bar">
                         <div class="friendship-fill" id="horseFriendshipBar" style="width: 0%"></div>
                     </div>
-                    <div>🌾 Última refeição: <span id="horseLastFed">Nunca</span></div>
+                    <div id="horseCountdown" style="color: #666; font-size: 12px;">Pode alimentar agora</div>
                     <button class="feed-btn" onclick="feedHorse()" id="feedHorseBtn">🌾 Dar Feno</button>
                     <button class="feed-btn" onclick="giveApple()" id="giveAppleBtn">🍎 Dar Maçã</button>
                 </div>
             </div>
+
+            <!-- Beehive -->
+            <div id="beehive" class="animal-structure" style="display: none;">
+                <h4>🍯 Colmeia</h4>
+                <div class="bees-grid" id="beesGrid"></div>
+            </div>
+
         </div>
 
         <!-- Center Area -->
@@ -1413,14 +1412,7 @@
                 <div id="woodCuttingStatus">Clique para transformar troncos em lenha!</div>
             </div>
 
-            <!-- Beehive -->
-            <div id="beehive" class="animal-structure" style="display: none;">
-                <h4>🍯 Colmeia</h4>
-                <div class="bees-grid" id="beesGrid"></div>
-                <div id="honeyStatus" style="text-align: center; margin-top: 10px; font-weight: bold;">
-                    Próxima coleta em: <span id="honeyTimer">5:00</span>
-                </div>
-            </div>
+
 
             <!-- Flower Field -->
             <div id="flowerField" class="animal-structure" style="display: none;">
@@ -1791,7 +1783,17 @@
                 tea: 0,
                 wood: 0,
                 dogFood: 0,
-                vaccines: 0
+                vaccines: 0,
+                chá: 0,
+                salad: 0,
+                stew: 0,
+                steak: 0,
+                chicken: 0,
+                cookedFish: 0,
+                rawChicken: 0,
+                chickenFeed: 0,
+                pigFeed: 0,
+                animalFeed: 0
             },
             machineStorage: {
                 composter: {
@@ -1956,8 +1958,8 @@
                 }
             }, 5000);
             
-            // Avatar sickness check every 10 seconds
-            setInterval(checkAvatarSickness, 10000);
+            // Avatar sickness check every 30 seconds
+            setInterval(checkAvatarSickness, 30000);
             
             // Send random mail every 10-20 minutes
             setInterval(() => {
@@ -1973,8 +1975,8 @@
             // Check tree fruit regrowth every 5 minutes
             setInterval(checkTreeRegrowth, 300000);
             
-            // Check fish respawn every 3 minutes
-            setInterval(checkFishRespawn, 180000);
+            // Check fish respawn every 5 minutes
+            setInterval(checkFishRespawn, 300000);
             
             // Check rock rest time every minute
             setInterval(checkRockRest, 60000);
@@ -2064,10 +2066,8 @@
                     gameState.machineStorage.coffeeRoaster.coffee += harvestAmount;
                 } else if (seed.name === 'Uva') {
                     gameState.machineStorage.juiceMachine.grapes += harvestAmount;
-                } else if (seed.name === 'Trigo') {
-                    gameState.machineStorage.mill.wheat += harvestAmount;
                 } else {
-                    // Store in quitanda for sale
+                    // Store in quitanda for sale (including Trigo)
                     const category = seed.category;
                     if (!gameState.inventory[category][seed.name]) {
                         gameState.inventory[category][seed.name] = 0;
@@ -2543,32 +2543,18 @@
             }
         }
 
-        function buyAxeAndWoodCutting() {
-            if (gameState.coins >= 100 && !gameState.hasAxe && !gameState.hasWoodCutting) {
-                gameState.coins -= 100;
-                gameState.hasAxe = true;
-                gameState.hasWoodCutting = true;
-                gameState.axeUses = 50;
-                document.getElementById('woodCutting').style.display = 'block';
-                document.getElementById('axeStatus').style.display = 'block';
-                document.getElementById('axeShop').style.display = 'none';
-                updateUI();
-                updateAxeStatus();
-                alert('🪓 Machado e Cortar Lenha comprados! Use o machado para coletar troncos e cortar lenha!');
-            }
-        }
-
-        function buyAxe() {
-            if (gameState.coins >= 50 && !gameState.hasAxe) {
-                gameState.coins -= 50;
+        function buyAxeAndWoodCutter() {
+            if (gameState.coins >= 150 && !gameState.hasAxe && !gameState.machines.hasWoodCutter) {
+                gameState.coins -= 150;
                 gameState.hasAxe = true;
                 gameState.axeUses = 50;
+                gameState.machines.hasWoodCutter = true;
                 document.getElementById('axeStatus').style.display = 'block';
-                document.getElementById('axeOnlyShop').style.display = 'none';
-
+                document.getElementById('woodCutter').style.display = 'block';
+                document.getElementById('axeAndWoodCutterShop').style.display = 'none';
                 updateUI();
                 updateAxeStatus();
-                alert('🪓 Novo machado comprado! Agora você pode cortar lenha novamente!');
+                alert('🪓 Machado e Cortador de Lenha comprados! Use o machado para coletar troncos!');
             }
         }
 
@@ -2813,7 +2799,7 @@
             // Available cooked meals
             const meals = [
                 {name: 'chá', displayName: 'Chá', emoji: '🍵', effect: 'Cura doença'},
-                {name: 'salad', displayName: 'Salada', emoji: '🥗', effect: '+30% energia'},
+                {name: 'salada', displayName: 'Salada', emoji: '🥗', effect: '+30% energia'},
                 {name: 'stew', displayName: 'Ensopado', emoji: '🍲', effect: '+50% energia'},
                 {name: 'steak', displayName: 'Bife', emoji: '🥩', effect: '+100% energia'},
                 {name: 'chicken', displayName: 'Frango', emoji: '🍗', effect: '+65% energia'},
@@ -2826,9 +2812,17 @@
                 if (gameState.barn[meal.name] > 0) {
                     hasFood = true;
                     const foodItem = document.createElement('div');
-                    foodItem.className = 'food-item';
-                    foodItem.innerHTML = `${meal.emoji}<br>${meal.displayName}<br><small>${meal.effect}</small><br><small>Disponível: ${gameState.barn[meal.name]}</small>`;
-                    foodItem.onclick = () => eatFood(meal.name, meal.displayName);
+                    
+                    // If avatar is sick, only allow tea
+                    if (gameState.avatar.sick && meal.name !== 'chá') {
+                        foodItem.className = 'food-item disabled';
+                        foodItem.innerHTML = `${meal.emoji}<br>${meal.displayName}<br><small>Não pode comer doente</small><br><small>Disponível: ${gameState.barn[meal.name]}</small>`;
+                    } else {
+                        foodItem.className = 'food-item';
+                        foodItem.innerHTML = `${meal.emoji}<br>${meal.displayName}<br><small>${meal.effect}</small><br><small>Disponível: ${gameState.barn[meal.name]}</small>`;
+                        foodItem.onclick = () => eatFood(meal.name, meal.displayName);
+                    }
+                    
                     content.appendChild(foodItem);
                 }
             });
@@ -2861,6 +2855,28 @@
             stoveItems.forEach(item => {
                 const div = document.createElement('div');
                 div.className = 'food-item';
+                
+                // Check if player has all ingredients
+                let canCook = gameState.barn.wood >= 2;
+                if (item.name === 'Chá') {
+                    canCook = canCook && gameState.water >= 1 && gameState.machineStorage.stove.herbs >= 2;
+                } else if (item.name === 'Salada') {
+                    canCook = canCook && gameState.inventory.fruitsVegetables['Tomate'] >= 1 && 
+                              gameState.inventory.fruitsVegetables['Alface'] >= 1 && 
+                              gameState.inventory.fruitsVegetables['Brócolis'] >= 1;
+                } else if (item.name === 'Ensopado') {
+                    canCook = canCook && gameState.inventory.others['Ovos'] >= 1 && 
+                              gameState.inventory.fruitsVegetables['Batata'] >= 1 && 
+                              gameState.inventory.fruitsVegetables['Abóbora'] >= 1;
+                } else if (item.name === 'Bife') {
+                    canCook = canCook && gameState.machineStorage.stove.porkMeat >= 1;
+                }
+                
+                if (canCook) {
+                    div.style.backgroundColor = '#90EE90';
+                    div.style.borderColor = '#228B22';
+                }
+                
                 div.innerHTML = `${item.emoji}<br>${item.name}<br><small>${item.ingredients.join(', ')}</small><br><small>${item.effect}</small>`;
                 div.onclick = () => cookStove(item.name.toLowerCase());
                 stoveRecipes.appendChild(div);
@@ -2877,6 +2893,24 @@
             ovenItems.forEach(item => {
                 const div = document.createElement('div');
                 div.className = 'food-item';
+                
+                // Check if player has all ingredients
+                let canCook = gameState.barn.wood >= 3;
+                if (item.name === 'Frango') {
+                    canCook = canCook && gameState.barn.rawChicken >= 1;
+                } else if (item.name === 'Peixe') {
+                    canCook = canCook && gameState.inventory.others['Peixe'] >= 1;
+                } else if (item.name === 'Pão') {
+                    canCook = canCook && gameState.inventory.others['Ovos'] >= 1 && 
+                              gameState.inventory.others['Leite'] >= 1 && 
+                              gameState.inventory.others['Saco de Farinha'] >= 1;
+                }
+                
+                if (canCook) {
+                    div.style.backgroundColor = '#90EE90';
+                    div.style.borderColor = '#228B22';
+                }
+                
                 div.innerHTML = `${item.emoji}<br>${item.name}<br><small>${item.ingredients.join(', ')}</small><br><small>${item.effect}</small>`;
                 div.onclick = () => cookOven(item.name.toLowerCase());
                 ovenRecipes.appendChild(div);
@@ -2964,7 +2998,11 @@
 
                 setTimeout(() => {
                     gameState.machines.stove.working = false;
-                    gameState.barn[recipe] = (gameState.barn[recipe] || 0) + 1;
+                    if (recipe === 'salada') {
+                        gameState.barn.salada = (gameState.barn.salada || 0) + 1;
+                    } else {
+                        gameState.barn[recipe] = (gameState.barn[recipe] || 0) + 1;
+                    }
                     updateBarnDisplay();
                     updateMachineStatus('stove');
                     alert(`🔥 ${ingredients} pronto!`);
@@ -3089,12 +3127,19 @@
                                 document.getElementById('restBtn').disabled = false;
                                 document.getElementById('restBtn').textContent = '😴 Descansar 5min';
                             }
+                            
+                            // Remove sick warning if exists
+                            const sickWarning = document.getElementById('sickWarning');
+                            if (sickWarning) {
+                                document.body.removeChild(sickWarning);
+                            }
+                            
                             alert(`🍵 Você tomou ${displayName} e se curou!`);
                         } else {
                             alert(`🍵 Você tomou ${displayName}!`);
                         }
                         break;
-                    case 'salad':
+                    case 'salada':
                         gameState.avatar.energy = Math.min(gameState.avatar.maxEnergy, 
                             gameState.avatar.energy + Math.floor(gameState.avatar.maxEnergy * 0.3));
                         alert(`🥗 Você comeu ${displayName} e recuperou 30% da energia!`);
@@ -3262,19 +3307,26 @@
                 gameState.avatar.firstSickness = 0; // Mark as triggered
                 updateAvatarUI();
                 
-                // Schedule next random sickness (30 minutes to 2 hours)
+                // Schedule next random sickness (1 to 3 hours)
                 setTimeout(() => {
                     if (!gameState.avatar.sick) {
                         gameState.avatar.sick = true;
                         gameState.avatar.sickTime = Date.now();
                         updateAvatarUI();
                     }
-                }, Math.random() * 5400000 + 1800000); // 30min to 2h
+                }, Math.random() * 7200000 + 3600000); // 1h to 3h
             }
             
-            // Lose energy while sick
+            // Lose energy while sick - 2 energy every 30 seconds
             if (gameState.avatar.sick) {
-                useEnergy(1);
+                gameState.avatar.energy = Math.max(0, gameState.avatar.energy - 2);
+                updateAvatarUI();
+                
+                if (gameState.avatar.energy === 0) {
+                    alert('💀 Você morreu de doença! O jogo será reiniciado.');
+                    localStorage.removeItem('realFarmSave');
+                    location.reload();
+                }
             }
         }
 
@@ -4023,13 +4075,20 @@ Previsão do tempo: ${Math.random() > 0.5 ? 'Ensolarado ☀️' : 'Possibilidade
             if (gameState.machineStorage.grassDryer.driedGrass >= 4) {
                 gameState.machineStorage.grassDryer.driedGrass -= 4;
                 
-                setTimeout(() => {
-                    gameState.barn.hay++;
-                    updateBarnDisplay();
-                    alert('🌾 Feno pronto!');
-                }, 10000); // 10 seconds
+                // Set hay making status
+                gameState.machines.grassDryer.working = true;
+                gameState.machines.grassDryer.startTime = Date.now();
+                gameState.machines.grassDryer.type = 'hay';
                 
                 updateMachineStatus('grassDryer');
+                
+                setTimeout(() => {
+                    gameState.machines.grassDryer.working = false;
+                    gameState.barn.hay++;
+                    updateBarnDisplay();
+                    updateMachineStatus('grassDryer');
+                    alert('🌾 Feno pronto!');
+                }, 10000); // 10 seconds
             } else {
                 alert('Você precisa de: 4 Gramas Secas (no Secador)!');
             }
@@ -4051,7 +4110,6 @@ Previsão do tempo: ${Math.random() > 0.5 ? 'Ensolarado ☀️' : 'Possibilidade
                     gameState.barn.wood += 4;
                     updateBarnDisplay();
                     updateMachineStatus('woodCutter');
-                    alert('🪓 4 Lenhas prontas!');
                 }, 5000); // 5 seconds
             } else {
                 alert('Você precisa de: 1 Tronco (no Cortador)!');
@@ -4075,7 +4133,7 @@ Previsão do tempo: ${Math.random() > 0.5 ? 'Ensolarado ☀️' : 'Possibilidade
                     case 'mill': duration = 60000; break;
                     case 'cheeseMaker': duration = 60000; break;
                     case 'spinningMachine': duration = 60000; break;
-                    case 'grassDryer': duration = 30000; break;
+                    case 'grassDryer': duration = machine.type === 'hay' ? 10000 : 30000; break;
                     case 'woodCutter': duration = 5000; break;
                     case 'stove': duration = machine.type === 'pão' ? 60000 : 10000; break;
                 }
@@ -4102,10 +4160,18 @@ Previsão do tempo: ${Math.random() > 0.5 ? 'Ensolarado ☀️' : 'Possibilidade
                 {name: 'Chaves', emoji: '🗝️', quantity: gameState.barn.keys},
                 {name: 'Feno', emoji: '🌾', quantity: gameState.barn.hay},
                 {name: 'Carvão', emoji: '⚫', quantity: gameState.barn.coal},
-                {name: 'Chá', emoji: '🍵', quantity: gameState.barn.tea},
                 {name: 'Lenha', emoji: '🪵', quantity: gameState.barn.wood},
                 {name: 'Ração Cachorro', emoji: '🥩', quantity: gameState.barn.dogFood},
-                {name: 'Vacinas', emoji: '💉', quantity: gameState.barn.vaccines}
+                {name: 'Vacinas', emoji: '💉', quantity: gameState.barn.vaccines},
+                {name: 'Ração Galinha', emoji: '🐔', quantity: gameState.barn.chickenFeed || 0},
+                {name: 'Ração Porco', emoji: '🐷', quantity: gameState.barn.pigFeed || 0},
+                {name: 'Frango Cru', emoji: '🐓', quantity: gameState.barn.rawChicken || 0},
+                {name: 'Chá', emoji: '🍵', quantity: gameState.barn.chá || 0},
+                {name: 'Salada', emoji: '🥗', quantity: gameState.barn.salada || 0},
+                {name: 'Ensopado', emoji: '🍲', quantity: gameState.barn.stew || 0},
+                {name: 'Bife', emoji: '🥩', quantity: gameState.barn.steak || 0},
+                {name: 'Frango', emoji: '🍗', quantity: gameState.barn.chicken || 0},
+                {name: 'Peixe Cozido', emoji: '🐟', quantity: gameState.barn.cookedFish || 0}
             ];
             
             barnContents.forEach(item => {
@@ -4231,8 +4297,7 @@ Previsão do tempo: ${Math.random() > 0.5 ? 'Ensolarado ☀️' : 'Possibilidade
             if (gameState.axeUses <= 0) {
                 document.getElementById('axeStatus').classList.add('broken');
                 document.getElementById('axeStatus').innerHTML = '🪓 Machado quebrado! Compre outro no mercadinho.';
-
-                document.getElementById('axeOnlyShop').style.display = 'block';
+                document.getElementById('axeAndWoodCutterShop').style.display = 'block';
                 gameState.hasAxe = false;
             }
         }
@@ -4265,7 +4330,7 @@ Previsão do tempo: ${Math.random() > 0.5 ? 'Ensolarado ☀️' : 'Possibilidade
                 
                 if (gameState.chickens[i]) {
                     const chicken = gameState.chickens[i];
-                    slot.innerHTML = chicken.eating ? '🍽️' : chicken.emoji;
+                    slot.innerHTML = chicken.eating ? '🍽️' : chicken.resting ? '😴' : chicken.emoji;
                     
                     if (chicken.sick) slot.classList.add('sick');
                     if (chicken.eating) slot.classList.add('eating');
@@ -4290,7 +4355,7 @@ Previsão do tempo: ${Math.random() > 0.5 ? 'Ensolarado ☀️' : 'Possibilidade
                 
                 if (gameState.pigs[i]) {
                     const pig = gameState.pigs[i];
-                    slot.innerHTML = pig.eating ? '🍽️' : pig.emoji;
+                    slot.innerHTML = pig.eating ? '🍽️' : pig.resting ? '😴' : pig.emoji;
                     
                     if (pig.sick) slot.classList.add('sick');
                     if (pig.eating) slot.classList.add('eating');
@@ -4315,7 +4380,7 @@ Previsão do tempo: ${Math.random() > 0.5 ? 'Ensolarado ☀️' : 'Possibilidade
                 
                 if (gameState.sheep[i]) {
                     const sheep = gameState.sheep[i];
-                    slot.innerHTML = sheep.eating ? '🍽️' : sheep.emoji;
+                    slot.innerHTML = sheep.eating ? '🍽️' : sheep.resting ? '😴' : sheep.emoji;
                     
                     if (sheep.sick) slot.classList.add('sick');
                     if (sheep.eating) slot.classList.add('eating');
@@ -4340,7 +4405,7 @@ Previsão do tempo: ${Math.random() > 0.5 ? 'Ensolarado ☀️' : 'Possibilidade
                 
                 if (gameState.cows[i]) {
                     const cow = gameState.cows[i];
-                    slot.innerHTML = cow.eating ? '🍽️' : cow.emoji;
+                    slot.innerHTML = cow.eating ? '🍽️' : cow.resting ? '😴' : cow.emoji;
                     
                     if (cow.sick) slot.classList.add('sick');
                     if (cow.eating) slot.classList.add('eating');
@@ -4711,10 +4776,8 @@ Previsão do tempo: ${Math.random() > 0.5 ? 'Ensolarado ☀️' : 'Possibilidade
                     gameState.machineStorage.coffeeRoaster.coffee += harvestAmount;
                 } else if (seed.name === 'Uva') {
                     gameState.machineStorage.juiceMachine.grapes += harvestAmount;
-                } else if (seed.name === 'Trigo') {
-                    gameState.machineStorage.mill.wheat += harvestAmount;
                 } else {
-                    // Store in quitanda for sale
+                    // Store in quitanda for sale (including Trigo)
                     const category = seed.category;
                     if (!gameState.inventory[category][seed.name]) {
                         gameState.inventory[category][seed.name] = 0;
@@ -4822,25 +4885,29 @@ Previsão do tempo: ${Math.random() > 0.5 ? 'Ensolarado ☀️' : 'Possibilidade
             if (gameState.flowers[type] > 0) {
                 gameState.flowers[type]--;
                 
-                // Store flowers in composter
-                gameState.machineStorage.composter.flowers++;
+                // Add flower to quitanda for sale
+                addToInventory('others', type.charAt(0).toUpperCase() + type.slice(1), 1);
                 
-                // Check if should drop herb (every 3 flowers)
-                const totalHarvested = Object.values(gameState.flowers).reduce((sum, count) => sum + (3 - count), 0);
-                if (totalHarvested % 3 === 0) {
+                // Track total flowers harvested for herb drops
+                if (!gameState.flowersHarvested) gameState.flowersHarvested = 0;
+                gameState.flowersHarvested++;
+                
+                // Check if should drop herb (every 5 flowers)
+                if (gameState.flowersHarvested % 5 === 0) {
                     gameState.machineStorage.stove.herbs++;
                     alert('🌿 Uma erva apareceu no fogão!');
                 }
                 
                 updateFlowersDisplay();
+                updateInventoryDisplay();
                 updateMachineStorageDisplay();
                 useEnergy(1);
                 
-                // Regrow after 3 minutes
+                // Regrow after 4 minutes
                 setTimeout(() => {
                     gameState.flowers[type] = Math.min(3, gameState.flowers[type] + 1);
                     updateFlowersDisplay();
-                }, 180000);
+                }, 240000);
             }
         }
 
@@ -4956,33 +5023,54 @@ Previsão do tempo: ${Math.random() > 0.5 ? 'Ensolarado ☀️' : 'Possibilidade
                 animal.sickTime = 0;
                 updateBarnDisplay();
                 alert(`💉 ${animal.emoji} foi curado!`);
+            } else if (type === 'chicken' && !animal.sick) {
+                // Option to sacrifice chicken for raw chicken
+                if (confirm('Deseja sacrificar esta galinha para obter frango cru?')) {
+                    gameState.barn.rawChicken++;
+                    gameState.chickens.splice(index, 1);
+                    updateChickensDisplay();
+                    updateBarnDisplay();
+                    alert('🐓 Você obteve 1 frango cru!');
+                }
             }
         }
 
         function feedAllChickens() {
-            if (gameState.barn.animalFeed === 0) {
-                alert('Você precisa de ração animal!');
+            if (gameState.barn.chickenFeed === 0) {
+                alert('Você precisa de ração para galinhas!');
                 return;
             }
             
+            let fedCount = 0;
             gameState.chickens.forEach(chicken => {
-                if (!chicken.sick && !chicken.resting && !chicken.eating) {
+                if (!chicken.sick && !chicken.resting && !chicken.eating && gameState.barn.chickenFeed > 0) {
                     feedAnimal(chicken, 'chicken');
+                    fedCount++;
                 }
             });
+            
+            if (fedCount > 0) {
+                updateChickensDisplay();
+            }
         }
 
         function feedAllPigs() {
-            if (gameState.barn.animalFeed === 0) {
-                alert('Você precisa de ração animal!');
+            if (gameState.barn.pigFeed === 0) {
+                alert('Você precisa de ração para porcos!');
                 return;
             }
             
+            let fedCount = 0;
             gameState.pigs.forEach(pig => {
-                if (!pig.sick && !pig.resting && !pig.eating) {
+                if (!pig.sick && !pig.resting && !pig.eating && gameState.barn.pigFeed > 0) {
                     feedAnimal(pig, 'pig');
+                    fedCount++;
                 }
             });
+            
+            if (fedCount > 0) {
+                updatePigsDisplay();
+            }
         }
 
         function feedAllSheep() {
@@ -5035,9 +5123,14 @@ Previsão do tempo: ${Math.random() > 0.5 ? 'Ensolarado ☀️' : 'Possibilidade
             
             if (animal.resting || animal.eating || animal.sick) return;
             
-            if (type === 'chicken' || type === 'pig') {
-                if (gameState.barn.animalFeed > 0) {
-                    gameState.barn.animalFeed--;
+            if (type === 'chicken') {
+                if (gameState.barn.chickenFeed > 0) {
+                    gameState.barn.chickenFeed--;
+                    startEating(animal, type);
+                }
+            } else if (type === 'pig') {
+                if (gameState.barn.pigFeed > 0) {
+                    gameState.barn.pigFeed--;
                     startEating(animal, type);
                 }
             } else if (type === 'sheep' || type === 'cow') {
@@ -5067,6 +5160,10 @@ Previsão do tempo: ${Math.random() > 0.5 ? 'Ensolarado ☀️' : 'Possibilidade
                     if (type === 'chicken') {
                         animal.eggs = 3;
                         addToInventory('others', 'Ovos', 3);
+                        // 20% chance to produce raw chicken
+                        if (Math.random() < 0.2) {
+                            gameState.barn.rawChicken++;
+                        }
                     } else if (type === 'pig') {
                         animal.meat = 1;
                         gameState.machineStorage.stove.porkMeat++;
@@ -5242,23 +5339,7 @@ Previsão do tempo: ${Math.random() > 0.5 ? 'Ensolarado ☀️' : 'Possibilidade
             }
         }
 
-        function cutWood() {
-            if (gameState.hasAxe && gameState.axeUses > 0 && gameState.barn.trunks > 0) {
-                gameState.axeUses--;
-                gameState.barn.trunks--;
-                
-                addToInventory('others', 'Lenha', 2);
-                
-                updateAxeStatus();
-                updateBarnDisplay();
-                updateInventoryDisplay();
-                alert('🪓 Você cortou 1 tronco e ganhou 2 lenhas!');
-            } else if (!gameState.hasAxe) {
-                alert('Você precisa de um machado!');
-            } else if (gameState.barn.trunks === 0) {
-                alert('Você precisa de troncos para cortar!');
-            }
-        }
+
 
         function catchFish(index) {
             if (gameState.hasFishingRod && gameState.fishingRodUses > 0 && gameState.fish[index]) {
@@ -5564,5 +5645,5 @@ Previsão do tempo: ${Math.random() > 0.5 ? 'Ensolarado ☀️' : 'Possibilidade
         // Initialize game when page loads
         window.onload = initGame;
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96b53cf611d90093',t:'MTc1NDU1MzYwMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96b9ae63701e007f',t:'MTc1NDYwMDE5Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
