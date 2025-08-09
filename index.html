@@ -1737,7 +1737,7 @@
             <!-- Composter -->
             <div id="composter" class="machine">
                 <h4>🗑️ Composteira</h4>
-                <div class="recipe-info">Receita: 1 Flor + 1 Galho + 2 Estercos = 8 Adubos</div>
+                <div class="recipe-info">Receita: 1 Flor + 1 Galho + 2 Estercos = 8 Adubos<br><small>✨ Ingredientes são adicionados automaticamente nos slots quando colhidos!</small></div>
                 
                 <!-- Ingredient Slots -->
                 <div style="margin: 10px 0;">
@@ -4727,7 +4727,7 @@ Previsão do tempo: ${Math.random() > 0.5 ? 'Ensolarado ☀️' : 'Possibilidade
             // Bronze Medal - 30 minutes (1,800,000 ms)
             if (!gameState.achievements.bronze && gameTime >= 1800000) {
                 gameState.achievements.bronze = true;
-                addToInventory('others', 'Pedra de Prata', 1);
+                gameState.barn.pedradeprata = (gameState.barn.pedradeprata || 0) + 1;
                 
                 gameState.mailbox.mails.push({
                     subject: "🥉 MEDALHA DE BRONZE CONQUISTADA!",
@@ -4744,7 +4744,7 @@ Continue assim! Grandes conquistas te aguardam!`,
                 
                 gameState.mailbox.hasNewMail = true;
                 document.getElementById('mailAlert').style.display = 'flex';
-                updateInventoryDisplay();
+                updateBarnDisplay();
                 
                 // Show achievement notification
                 showAchievementNotification('🥉 MEDALHA DE BRONZE CONQUISTADA!', 'Prêmio: Pedra de Prata');
@@ -4753,7 +4753,7 @@ Continue assim! Grandes conquistas te aguardam!`,
             // Silver Medal - 1.5 hours (5,400,000 ms)
             if (!gameState.achievements.silver && gameTime >= 5400000) {
                 gameState.achievements.silver = true;
-                addToInventory('others', 'Pedra de Ouro', 1);
+                gameState.barn.pedradeouro = (gameState.barn.pedradeouro || 0) + 1;
                 
                 gameState.mailbox.mails.push({
                     subject: "🥈 MEDALHA DE PRATA CONQUISTADA!",
@@ -4770,7 +4770,7 @@ Você está se tornando um verdadeiro mestre da agricultura!`,
                 
                 gameState.mailbox.hasNewMail = true;
                 document.getElementById('mailAlert').style.display = 'flex';
-                updateInventoryDisplay();
+                updateBarnDisplay();
                 
                 showAchievementNotification('🥈 MEDALHA DE PRATA CONQUISTADA!', 'Prêmio: Pedra de Ouro');
             }
@@ -4778,7 +4778,7 @@ Você está se tornando um verdadeiro mestre da agricultura!`,
             // Gold Medal - 3 hours (10,800,000 ms)
             if (!gameState.achievements.gold && gameTime >= 10800000) {
                 gameState.achievements.gold = true;
-                addToInventory('others', 'Pedra de Diamante', 1);
+                gameState.barn.pedradediamante = (gameState.barn.pedradediamante || 0) + 1;
                 
                 gameState.mailbox.mails.push({
                     subject: "🥇 MEDALHA DE OURO CONQUISTADA!",
@@ -4796,7 +4796,7 @@ Parabéns por sua perseverança e paixão pela agricultura!`,
                 
                 gameState.mailbox.hasNewMail = true;
                 document.getElementById('mailAlert').style.display = 'flex';
-                updateInventoryDisplay();
+                updateBarnDisplay();
                 
                 showAchievementNotification('🥇 MEDALHA DE OURO CONQUISTADA!', 'Prêmio: Pedra de Diamante');
             }
@@ -5656,8 +5656,26 @@ Parabéns por sua perseverança e paixão pela agricultura!`,
                         
                         const foodItem = document.createElement('div');
                         foodItem.className = 'food-item';
-                        foodItem.innerHTML = `${emoji}<br>${item}<br><small>💰${finalPrice} cada</small><br><small>Disponível: ${quantity}</small>`;
-                        foodItem.onclick = () => addToQuitandaSlot(slotIndex, category, item, emoji, finalPrice);
+                        
+                        if (quantity > 1) {
+                            // Multiple items - show quantity selector
+                            foodItem.innerHTML = `
+                                ${emoji}<br>${item}<br>
+                                <small>💰${finalPrice} cada</small><br>
+                                <small>Disponível: ${quantity}</small><br>
+                                <div style="display: flex; align-items: center; justify-content: center; gap: 5px; margin-top: 8px;">
+                                    <button onclick="adjustQuantity('${item}', '${category}', -1)" style="background: #ff4444; color: white; border: none; border-radius: 3px; width: 20px; height: 20px; font-size: 12px; cursor: pointer;">-</button>
+                                    <span id="qty-${item.replace(/\s+/g, '')}" style="font-weight: bold; min-width: 20px; text-align: center;">1</span>
+                                    <button onclick="adjustQuantity('${item}', '${category}', 1)" style="background: #4CAF50; color: white; border: none; border-radius: 3px; width: 20px; height: 20px; font-size: 12px; cursor: pointer;">+</button>
+                                </div>
+                                <button onclick="confirmQuantitySelection(${slotIndex}, '${category}', '${item}', '${emoji}', ${finalPrice})" style="background: #2196F3; color: white; border: none; border-radius: 5px; padding: 4px 8px; font-size: 11px; cursor: pointer; margin-top: 5px;">Ok</button>
+                            `;
+                        } else {
+                            // Single item - direct selection
+                            foodItem.innerHTML = `${emoji}<br>${item}<br><small>💰${finalPrice} cada</small><br><small>Disponível: ${quantity}</small>`;
+                            foodItem.onclick = () => addToQuitandaSlot(slotIndex, category, item, emoji, finalPrice, null, 1);
+                        }
+                        
                         content.appendChild(foodItem);
                     }
                 });
@@ -5697,8 +5715,26 @@ Parabéns por sua perseverança e paixão pela agricultura!`,
                     
                     const foodItem = document.createElement('div');
                     foodItem.className = 'food-item';
-                    foodItem.innerHTML = `${item.emoji}<br>${item.name}<br><small>💰${finalPrice} cada</small><br><small>Disponível: ${quantity}</small>`;
-                    foodItem.onclick = () => addToQuitandaSlot(slotIndex, 'barn', item.name, item.emoji, finalPrice, item.key);
+                    
+                    if (quantity > 1) {
+                        // Multiple items - show quantity selector
+                        foodItem.innerHTML = `
+                            ${item.emoji}<br>${item.name}<br>
+                            <small>💰${finalPrice} cada</small><br>
+                            <small>Disponível: ${quantity}</small><br>
+                            <div style="display: flex; align-items: center; justify-content: center; gap: 5px; margin-top: 8px;">
+                                <button onclick="adjustQuantity('${item.name}', 'barn', -1)" style="background: #ff4444; color: white; border: none; border-radius: 3px; width: 20px; height: 20px; font-size: 12px; cursor: pointer;">-</button>
+                                <span id="qty-${item.name.replace(/\s+/g, '')}" style="font-weight: bold; min-width: 20px; text-align: center;">1</span>
+                                <button onclick="adjustQuantity('${item.name}', 'barn', 1)" style="background: #4CAF50; color: white; border: none; border-radius: 3px; width: 20px; height: 20px; font-size: 12px; cursor: pointer;">+</button>
+                            </div>
+                            <button onclick="confirmQuantitySelection(${slotIndex}, 'barn', '${item.name}', '${item.emoji}', ${finalPrice}, '${item.key}')" style="background: #2196F3; color: white; border: none; border-radius: 5px; padding: 4px 8px; font-size: 11px; cursor: pointer; margin-top: 5px;">Ok</button>
+                        `;
+                    } else {
+                        // Single item - direct selection
+                        foodItem.innerHTML = `${item.emoji}<br>${item.name}<br><small>💰${finalPrice} cada</small><br><small>Disponível: ${quantity}</small>`;
+                        foodItem.onclick = () => addToQuitandaSlot(slotIndex, 'barn', item.name, item.emoji, finalPrice, item.key, 1);
+                    }
+                    
                     content.appendChild(foodItem);
                 }
             });
@@ -5710,19 +5746,68 @@ Parabéns por sua perseverança e paixão pela agricultura!`,
             modal.style.display = 'flex';
         }
 
-        function addToQuitandaSlot(slotIndex, category, itemName, emoji, price, barnKey = null) {
-            // Check if item is available
+        // Global variable to track selected quantities
+        let selectedQuantities = {};
+
+        function adjustQuantity(itemName, category, change) {
+            const itemKey = itemName.replace(/\s+/g, '');
+            const qtyElement = document.getElementById(`qty-${itemKey}`);
+            
+            if (!selectedQuantities[itemKey]) {
+                selectedQuantities[itemKey] = 1;
+            }
+            
+            selectedQuantities[itemKey] += change;
+            
+            // Get max available quantity
+            let maxQuantity;
+            if (category === 'barn') {
+                const barnItem = [
+                    {name: 'Ossos', key: 'bones'}, {name: 'Chaves', key: 'keys'}, {name: 'Feno', key: 'hay'},
+                    {name: 'Carvão', key: 'coal'}, {name: 'Lenha', key: 'wood'}, {name: 'Etanol', key: 'ethanol'},
+                    {name: 'Ração Cachorro', key: 'dogFood'}, {name: 'Vacinas', key: 'vaccines'},
+                    {name: 'Ração Galinha', key: 'chickenFeed'}, {name: 'Ração Porco', key: 'pigFeed'},
+                    {name: 'Frango Cru', key: 'rawChicken'}, {name: 'Rosa', key: 'rosa'},
+                    {name: 'Girassol', key: 'girassol'}, {name: 'Margarida', key: 'margarida'},
+                    {name: 'Chá', key: 'chá'}, {name: 'Salada', key: 'salada'},
+                    {name: 'Ensopado', key: 'stew'}, {name: 'Bife', key: 'steak'},
+                    {name: 'Frango', key: 'chicken'}, {name: 'Peixe Cozido', key: 'cookedFish'},
+                    {name: 'Pão', key: 'pão'}, {name: 'Bolo de Aniversário', key: 'birthdayCake'}
+                ].find(item => item.name === itemName);
+                maxQuantity = gameState.barn[barnItem.key] || 0;
+            } else {
+                maxQuantity = gameState.inventory[category][itemName] || 0;
+            }
+            
+            // Clamp quantity between 1 and max available
+            selectedQuantities[itemKey] = Math.max(1, Math.min(selectedQuantities[itemKey], maxQuantity));
+            
+            qtyElement.textContent = selectedQuantities[itemKey];
+        }
+
+        function confirmQuantitySelection(slotIndex, category, itemName, emoji, price, barnKey = null) {
+            const itemKey = itemName.replace(/\s+/g, '');
+            const quantity = selectedQuantities[itemKey] || 1;
+            
+            addToQuitandaSlot(slotIndex, category, itemName, emoji, price, barnKey, quantity);
+            
+            // Reset selected quantity
+            selectedQuantities[itemKey] = 1;
+        }
+
+        function addToQuitandaSlot(slotIndex, category, itemName, emoji, price, barnKey = null, quantity = 1) {
+            // Check if enough items are available
             let available = false;
             
             if (category === 'barn') {
-                available = gameState.barn[barnKey] > 0;
+                available = gameState.barn[barnKey] >= quantity;
                 if (available) {
-                    gameState.barn[barnKey]--;
+                    gameState.barn[barnKey] -= quantity;
                 }
             } else {
-                available = gameState.inventory[category][itemName] > 0;
+                available = gameState.inventory[category][itemName] >= quantity;
                 if (available) {
-                    gameState.inventory[category][itemName]--;
+                    gameState.inventory[category][itemName] -= quantity;
                 }
             }
             
@@ -5730,7 +5815,7 @@ Parabéns por sua perseverança e paixão pela agricultura!`,
                 // Check if slot already has the same item
                 if (gameState.quitandaSlots[slotIndex] && gameState.quitandaSlots[slotIndex].name === itemName) {
                     // Same item - increase quantity
-                    gameState.quitandaSlots[slotIndex].quantity++;
+                    gameState.quitandaSlots[slotIndex].quantity += quantity;
                 } else {
                     // Check if there's another slot with the same item to stack with
                     let existingSlotIndex = -1;
@@ -5743,8 +5828,8 @@ Parabéns por sua perseverança e paixão pela agricultura!`,
                     
                     if (existingSlotIndex !== -1) {
                         // Stack with existing item
-                        gameState.quitandaSlots[existingSlotIndex].quantity++;
-                        alert(`🏪 ${itemName} foi empilhado! Total: ${gameState.quitandaSlots[existingSlotIndex].quantity}x`);
+                        gameState.quitandaSlots[existingSlotIndex].quantity += quantity;
+                        alert(`🏪 ${quantity}x ${itemName} foi empilhado! Total: ${gameState.quitandaSlots[existingSlotIndex].quantity}x`);
                     } else {
                         // New item or different item
                         gameState.quitandaSlots[slotIndex] = {
@@ -5753,9 +5838,9 @@ Parabéns por sua perseverança e paixão pela agricultura!`,
                             price: price,
                             category: category,
                             barnKey: barnKey,
-                            quantity: 1
+                            quantity: quantity
                         };
-                        alert(`🏪 ${itemName} foi adicionado à quitanda por ${price} moedas cada!`);
+                        alert(`🏪 ${quantity}x ${itemName} foi adicionado à quitanda por ${price} moedas cada!`);
                     }
                 }
                 
@@ -5763,6 +5848,8 @@ Parabéns por sua perseverança e paixão pela agricultura!`,
                 updateBarnDisplay();
                 updateQuitandaSlotsDisplay();
                 closeFoodMenu();
+            } else {
+                alert(`Você não tem ${quantity}x ${itemName} disponível!`);
             }
         }
 
@@ -5902,6 +5989,53 @@ Parabéns por sua perseverança e paixão pela agricultura!`,
         }
 
         // Machine Functions
+        function autoAddToComposterSlot(ingredientName, emoji) {
+            if (!gameState.machines || !gameState.machines.hasComposter) return;
+            
+            // Initialize slots if not present
+            if (!gameState.machines.composter.ingredientSlots) {
+                gameState.machines.composter.ingredientSlots = [null, null, null];
+            }
+            
+            // Determine which slot based on ingredient type
+            let targetSlot = -1;
+            if (ingredientName === 'Flor') {
+                targetSlot = 0; // First slot for flowers
+            } else if (ingredientName === 'Galho') {
+                targetSlot = 1; // Second slot for branches
+            } else if (ingredientName === 'Esterco') {
+                targetSlot = 2; // Third slot for manure
+            }
+            
+            // Add to specific slot if empty
+            if (targetSlot !== -1 && !gameState.machines.composter.ingredientSlots[targetSlot]) {
+                gameState.machines.composter.ingredientSlots[targetSlot] = {
+                    name: ingredientName,
+                    emoji: emoji
+                };
+                
+                // Show notification
+                const alertDiv = document.createElement('div');
+                alertDiv.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: #4CAF50;
+                    color: white;
+                    padding: 10px 20px;
+                    border-radius: 10px;
+                    z-index: 3000;
+                    font-weight: bold;
+                `;
+                alertDiv.textContent = `${emoji} ${ingredientName} adicionado automaticamente à composteira!`;
+                document.body.appendChild(alertDiv);
+                
+                setTimeout(() => {
+                    document.body.removeChild(alertDiv);
+                }, 2000);
+            }
+        }
+
         function addIngredientToComposter(slotIndex) {
             if (gameState.machines.composter.ingredientSlots[slotIndex]) {
                 alert('Este slot já está ocupado!');
@@ -5987,9 +6121,18 @@ Parabéns por sua perseverança e paixão pela agricultura!`,
         }
 
         function updateComposterDisplay() {
+            if (!gameState.machines || !gameState.machines.hasComposter) return;
+            
+            // Initialize slots if not present
+            if (!gameState.machines.composter.ingredientSlots) {
+                gameState.machines.composter.ingredientSlots = [null, null, null];
+            }
+            
             // Update ingredient slots
             for (let i = 0; i < 3; i++) {
                 const slot = document.getElementById(`composterSlot${i}`);
+                if (!slot) continue;
+                
                 const ingredient = gameState.machines.composter.ingredientSlots[i];
                 
                 if (ingredient) {
@@ -7771,6 +7914,11 @@ Parabéns por sua perseverança e paixão pela agricultura!`,
                 }
                 gameState.barn[flowerKey]++;
                 
+                // Auto-add flower to composter slot if composter exists (goes to slot 0)
+                if (gameState.machines && gameState.machines.hasComposter) {
+                    autoAddToComposterSlot('Flor', '🌸');
+                }
+                
                 // Track total flowers harvested for herb drops
                 if (!gameState.flowersHarvested) gameState.flowersHarvested = 0;
                 gameState.flowersHarvested++;
@@ -7784,6 +7932,7 @@ Parabéns por sua perseverança e paixão pela agricultura!`,
                 updateFlowersDisplay();
                 updateBarnDisplay();
                 updateMachineStorageDisplay();
+                updateComposterDisplay();
                 useEnergy(1);
                 
                 // Regrow after 5 minutes
@@ -7996,7 +8145,11 @@ Parabéns por sua perseverança e paixão pela agricultura!`,
                             gameState.inventory.others['Leite'] = 0;
                         }
                         gameState.inventory.others['Leite'] += 3;
-                        gameState.machineStorage.composter.manure = (gameState.machineStorage.composter.manure || 0) + 1;
+                        
+                        // Auto-add manure to composter slot if composter exists (goes to slot 2)
+                        if (gameState.machines && gameState.machines.hasComposter) {
+                            autoAddToComposterSlot('Esterco', '💩');
+                        }
                     }
                     
                     updateInventoryDisplay();
@@ -8348,15 +8501,20 @@ Parabéns por sua perseverança e paixão pela agricultura!`,
                 }
                 gameState.grassDryerSlot.grass++;
                 
-                // Drop flower every 8 grasses for composter
+                // Drop flower every 8 grasses for composter - goes directly to slot 0
                 if (gameState.grassHarvested % 8 === 0) {
-                    gameState.machineStorage.composter.flowers++;
-                    alert('🌸 Uma flor apareceu na composteira!');
+                    if (gameState.machines && gameState.machines.hasComposter) {
+                        autoAddToComposterSlot('Flor', '🌸');
+                    } else {
+                        gameState.machineStorage.composter.flowers++;
+                        alert('🌸 Uma flor apareceu na composteira!');
+                    }
                 }
                 
                 updateGrassDisplay();
                 updateGrassDryerDisplay();
                 updateMachineStorageDisplay();
+                updateComposterDisplay();
                 useEnergy(1);
             }
         }
@@ -8367,15 +8525,20 @@ Parabéns por sua perseverança e paixão pela agricultura!`,
                 gameState.trees.trunk.clicks++;
                 gameState.barn.trunks = (gameState.barn.trunks || 0) + 1;
                 
-                // Drop branches every 3 clicks for composter
+                // Auto-add branches to composter slot if composter exists (every 3 clicks)
                 if (gameState.trees.trunk.clicks % 3 === 0) {
-                    gameState.machineStorage.composter.branches += 2;
-                    alert('🌿 2 galhos apareceram na composteira!');
+                    if (gameState.machines && gameState.machines.hasComposter) {
+                        // Add 2 branches to slot 1 (second slot)
+                        autoAddToComposterSlot('Galho', '🌿');
+                        autoAddToComposterSlot('Galho', '🌿');
+                    }
                 }
                 
                 updateAxeStatus();
                 updateTreesDisplay();
                 updateBarnDisplay();
+                updateMachineStorageDisplay();
+                updateComposterDisplay();
                 useEnergy(1);
             } else if (!gameState.hasAxe) {
                 alert('Você precisa de um machado para cortar troncos!');
@@ -8967,5 +9130,5 @@ Parabéns por sua perseverança e paixão pela agricultura!`,
         // Initialize game when page loads
         window.onload = initGame;
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96c358d2f5650083',t:'MTc1NDcwMTU0NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96c42d7c86520093',t:'MTc1NDcxMDI1Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
