@@ -1091,6 +1091,53 @@
             margin: 6px 0;
             font-size: 12px;
         }
+
+        .quitanda-slot {
+            width: 80px;
+            height: 80px;
+            border: 3px solid #8B4513;
+            border-radius: 10px;
+            background: #F5DEB3;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .quitanda-slot:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .quitanda-slot.empty {
+            background: #F5DEB3;
+            border-color: #8B4513;
+        }
+
+        .quitanda-slot.filled {
+            background: #90EE90;
+            border-color: #228B22;
+        }
+
+        .slot-quantity {
+            font-size: 12px;
+            background: rgba(255,255,255,0.8);
+            border-radius: 8px;
+            padding: 2px 4px;
+            margin-top: 2px;
+        }
+
+        .slot-price {
+            font-size: 10px;
+            background: rgba(255,215,0,0.8);
+            border-radius: 6px;
+            padding: 1px 3px;
+            margin-top: 1px;
+        }
         
         @media (max-width: 768px) {
             .main-container {
@@ -1167,6 +1214,8 @@
                     <div id="barnItems"></div>
                 </div>
             </div>
+
+
 
             <div class="panel">
                 <h3>🏬 Mercadinho</h3>
@@ -1670,20 +1719,16 @@
             <!-- Quitanda na coluna central -->
             <div class="quitanda-center" style="margin-top: 20px;">
                 <h3 style="color: #8B4513; text-align: center; margin-bottom: 20px;">🏪 Quitanda</h3>
-                <div style="text-align: center; padding: 40px 20px; color: #8B4513;">
-                    <div style="font-size: 48px; margin-bottom: 20px;">🏪</div>
-                    <h4 style="margin-bottom: 15px;">Quitanda Vazia</h4>
-                    <p style="margin-bottom: 20px; line-height: 1.5;">
-                        Todos os seus produtos agora ficam organizados no <strong>Celeiro</strong>!<br>
-                        Vá até o celeiro na barra lateral esquerda para vender seus itens.
-                    </p>
-                    <div style="background: rgba(139, 69, 19, 0.1); border-radius: 10px; padding: 15px; margin: 20px 0;">
-                        <strong>💡 Como vender:</strong><br>
-                        • Clique em qualquer item no Celeiro para vender individualmente<br>
-                        • Use o botão "Vender Tudo" abaixo para vender todos os itens vendáveis
-                    </div>
+                <p style="text-align: center; color: #8B4513; margin-bottom: 15px; font-size: 14px;">
+                    Clique nos slots vazios para adicionar produtos para vender!
+                </p>
+                
+                <!-- Quitanda Slots Grid -->
+                <div id="quitandaSlotsGrid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px;"></div>
+                
+                <div style="text-align: center;">
+                    <button class="sell-all-btn" onclick="sellAllQuitandaSlots()" style="width: 100%;">💰 Vender Tudo da Quitanda</button>
                 </div>
-                <button class="sell-all-btn" onclick="sellAll()" style="margin-top: 25px;">💰 Vender Tudo do Celeiro</button>
             </div>
         </div>
 
@@ -1693,9 +1738,20 @@
             <div id="composter" class="machine">
                 <h4>🗑️ Composteira</h4>
                 <div class="recipe-info">Receita: 1 Flor + 1 Galho + 2 Estercos = 8 Adubos</div>
-                <div class="machine-status">Flores: <span id="flowerStorage">0</span> | Galhos: <span id="branchStorage">0</span> | Estercos: <span id="manureStorage">0</span></div>
+                
+                <!-- Ingredient Slots -->
+                <div style="margin: 10px 0;">
+                    <h5 style="color: #8B4513; margin-bottom: 5px;">🗑️ Ingredientes:</h5>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px;">
+                        <div id="composterSlot0" class="ingredient-slot" onclick="addIngredientToComposter(0)" style="background: #8B4513; color: white;">+</div>
+                        <div id="composterSlot1" class="ingredient-slot" onclick="addIngredientToComposter(1)" style="background: #8B4513; color: white;">+</div>
+                        <div id="composterSlot2" class="ingredient-slot" onclick="addIngredientToComposter(2)" style="background: #8B4513; color: white;">+</div>
+                    </div>
+                </div>
+                
                 <div id="composterStatus" class="machine-status">Pronta para usar</div>
                 <button class="machine-btn" onclick="startComposting()" id="composterBtn">🗑️ Fazer Adubo</button>
+                <button class="machine-btn" onclick="clearComposterSlots()" style="background: #f44336;">🗑️ Limpar</button>
             </div>
 
             <!-- Mixer -->
@@ -2099,6 +2155,7 @@
                 fruitsVegetables: {},
                 others: {}
             },
+            quitandaSlots: Array(20).fill(null),
             barn: {
                 bones: 0,
                 keys: 0,
@@ -2230,10 +2287,32 @@
             // Initialize flower field - always available
             gameState.hasFlowerField = true;
             document.getElementById('flowerField').style.display = 'block';
+            
+            // Initialize flowers if not present
+            if (!gameState.flowers) {
+                gameState.flowers = {
+                    rosa: 3,
+                    girassol: 3,
+                    margarida: 3,
+                    lastHarvest: 0
+                };
+            }
+            
             updateFlowersDisplay();
+            createQuitandaSlots();
             
             // Initialize fish lake and mine - always visible
             document.getElementById('fishLake').style.display = 'block';
+            document.getElementById('mine').style.display = 'block';
+            
+            // Initialize fish and rocks arrays if not present
+            if (!gameState.fish || gameState.fish.length === 0) {
+                gameState.fish = Array(4).fill(true);
+            }
+            if (!gameState.rocks || gameState.rocks.length === 0) {
+                gameState.rocks = Array(3).fill().map(() => ({ hits: 0, resting: false, restTime: 0 }));
+            }
+            
             updateFishDisplay();
             updateRocksDisplay();
             
@@ -2300,6 +2379,7 @@
                 
                 // Update quitanda display
                 updateQuitandaDisplay();
+                updateQuitandaSlotsDisplay();
                 
                 // Update machine statuses
                 if (gameState.machines) {
@@ -2384,6 +2464,21 @@
             });
         }
 
+        function createQuitandaSlots() {
+            const grid = document.getElementById('quitandaSlotsGrid');
+            grid.innerHTML = '';
+            
+            for (let i = 0; i < 20; i++) {
+                const slot = document.createElement('div');
+                slot.className = 'quitanda-slot';
+                slot.id = `quitanda-slot-${i}`;
+                slot.onclick = () => handleQuitandaSlotClick(i);
+                grid.appendChild(slot);
+            }
+            
+            updateQuitandaSlotsDisplay();
+        }
+
         function selectSeed(index) {
             gameState.selectedSeed = index;
             document.querySelectorAll('.seed-btn').forEach((btn, i) => {
@@ -2434,19 +2529,38 @@
                 const seed = seeds[plot.seedType];
                 let harvestAmount = gameState.season === 1 ? 2 : 1; // Double harvest in summer
                 
-                // Store all items in barn
-                const barnKey = seed.name.toLowerCase().replace(' ', '');
-                if (!gameState.barn[barnKey]) {
-                    gameState.barn[barnKey] = 0;
+                // Store items in appropriate inventory category
+                const category = seed.category;
+                if (!gameState.inventory[category][seed.name]) {
+                    gameState.inventory[category][seed.name] = 0;
                 }
-                gameState.barn[barnKey] += harvestAmount;
+                gameState.inventory[category][seed.name] += harvestAmount;
+                
+                // Special handling for coffee - goes to machine storage
+                if (seed.name === 'Café') {
+                    gameState.machineStorage.coffeeRoaster.coffee = (gameState.machineStorage.coffeeRoaster.coffee || 0) + harvestAmount;
+                    gameState.inventory[category][seed.name] -= harvestAmount; // Remove from inventory
+                }
+                
+                // Special handling for grapes - goes to machine storage
+                if (seed.name === 'Uva') {
+                    gameState.machineStorage.juiceMachine.grapes = (gameState.machineStorage.juiceMachine.grapes || 0) + harvestAmount;
+                    gameState.inventory[category][seed.name] -= harvestAmount; // Remove from inventory
+                }
+                
+                // Special handling for wheat - goes to machine storage
+                if (seed.name === 'Trigo') {
+                    gameState.machineStorage.mill.wheat = (gameState.machineStorage.mill.wheat || 0) + harvestAmount;
+                    gameState.inventory[category][seed.name] -= harvestAmount; // Remove from inventory
+                }
                 
                 // Reset plot
                 plot.state = 'empty';
                 plot.seedType = null;
                 plot.plantTime = null;
                 updatePlotDisplay(plotIndex);
-                updateBarnDisplay();
+                updateInventoryDisplay();
+                updateMachineStorageDisplay();
                 useEnergy(1);
                 
                 if (harvestAmount > 1) {
@@ -2506,9 +2620,13 @@
         }
 
         function updateSeasonTimer() {
-            if (gameState.seasonTime > 0) {
-                gameState.seasonTime--;
+            // Ensure seasonTime is initialized and valid
+            if (typeof gameState.seasonTime !== 'number' || gameState.seasonTime <= 0 || isNaN(gameState.seasonTime)) {
+                console.log('Reinicializando seasonTime para 3600 segundos');
+                gameState.seasonTime = 3600; // Reset to 1 hour if invalid
             }
+            
+            gameState.seasonTime--;
             
             if (gameState.seasonTime <= 0) {
                 gameState.season = (gameState.season + 1) % 4;
@@ -2563,6 +2681,30 @@
                     }
                     updateBonfireDisplay();
                 }
+                
+                // Show season change notification
+                const alertDiv = document.createElement('div');
+                alertDiv.style.cssText = `
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    background: linear-gradient(135deg, #4CAF50, #45a049);
+                    color: white;
+                    padding: 20px 30px;
+                    border-radius: 15px;
+                    z-index: 3000;
+                    font-weight: bold;
+                    font-size: 20px;
+                    text-align: center;
+                    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+                `;
+                alertDiv.textContent = `${seasonEmojis[gameState.season]} ${seasons[gameState.season]} chegou!`;
+                document.body.appendChild(alertDiv);
+                
+                setTimeout(() => {
+                    document.body.removeChild(alertDiv);
+                }, 4000);
             }
             
             const minutes = Math.floor(gameState.seasonTime / 60);
@@ -4704,118 +4846,27 @@ Parabéns por sua perseverança e paixão pela agricultura!`,
             }, 5000);
         }
 
-        function sellAll() {
-            let totalEarnings = 0;
-            let springBonus = gameState.season === 0 ? 1.1 : 1; // 10% bonus na primavera
-            let itemsSold = 0;
-            let hasNewspaperBonus = false;
-            
-            // Item prices for non-seed items
-            const itemPrices = {
-                'CD': 50,
-                'Bola': 40,
-                'Sapato': 35,
-                'Mel': 60,
-                'Pérola': 100,
-                'Esmeralda': 200,
-                'Rubi': 180,
-                'Safira': 160,
-                'Flor': 25,
-                'Rosa': 30,
-                'Girassol': 35,
-                'Margarida': 25,
-                'Grama': 5,
-                'Maçã': 15,
-                'Laranja': 18,
-                'Banana': 12,
-                'Peixe': 25,
-                'Lenha': 8,
-                'Ovos': 20,
-                'Carne Suína': 45,
-                'Leite': 25,
-                'Esterco': 15,
-                'Lã': 30,
-                'Saco de Café': 120,
-                'Suco de Uva': 80,
-                'Saco de Farinha': 100,
-                'Queijo': 90,
-                'Novelo': 70,
-                'Pão': 50,
-                'Colar de Pérolas': 400,
-                'Anel de Esmeralda': 350,
-                'Buquê de Flores': 200,
-                'Pedra de Prata': 1000,
-                'Pedra de Ouro': 100000,
-                'Pedra de Diamante': 1000000,
-                'Abóbora': 27
-            };
-            
-            Object.keys(gameState.inventory).forEach(category => {
-                Object.keys(gameState.inventory[category]).forEach(item => {
-                    const quantity = gameState.inventory[category][item];
-                    if (quantity > 0) {
-                        let price = 0;
-                        let newspaperBonus = 1;
-                        
-                        // Check newspaper bonus
-                        if (gameState.newspaperBonus && gameState.newspaperBonus.product === item) {
-                            const now = Date.now();
-                            // Bonus lasts for 30 minutes
-                            if (now - gameState.newspaperBonus.timestamp <= 1800000) {
-                                newspaperBonus = 1 + (gameState.newspaperBonus.bonus / 100);
-                                hasNewspaperBonus = true;
-                            }
-                        }
-                        
-                        const seed = seeds.find(s => s.name === item);
-                        
-                        if (seed) {
-                            price = seed.price * 2; // Sell for double the buy price
-                        } else {
-                            price = itemPrices[item] || 10;
-                        }
-                        
-                        totalEarnings += Math.floor(quantity * price * springBonus * newspaperBonus);
-                        itemsSold += quantity;
-                        gameState.inventory[category][item] = 0;
-                    }
-                });
-            });
-            
-            gameState.coins += totalEarnings;
-            updateUI();
-            updateInventoryDisplay();
-            
-            if (totalEarnings > 0) {
-                let message = `💰 Vendeu ${itemsSold} itens por ${totalEarnings} moedas!`;
-                if (springBonus > 1) message += ' (Bônus da Primavera: +10%)';
-                if (hasNewspaperBonus) message += ` (Jornal: +${gameState.newspaperBonus.bonus}%)`;
+        function updateQuitandaSlotsDisplay() {
+            for (let i = 0; i < 20; i++) {
+                const slotElement = document.getElementById(`quitanda-slot-${i}`);
+                const slot = gameState.quitandaSlots[i];
                 
-                // Show success message
-                const alertDiv = document.createElement('div');
-                alertDiv.style.cssText = `
-                    position: fixed;
-                    top: 50%;
-                    left: 50%;
-                    transform: translate(-50%, -50%);
-                    background: #4CAF50;
-                    color: white;
-                    padding: 20px 30px;
-                    border-radius: 15px;
-                    z-index: 3000;
-                    font-weight: bold;
-                    font-size: 18px;
-                    text-align: center;
-                    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-                `;
-                alertDiv.textContent = message;
-                document.body.appendChild(alertDiv);
-                
-                setTimeout(() => {
-                    document.body.removeChild(alertDiv);
-                }, 3000);
-            } else {
-                alert('📦 Não há itens para vender na quitanda!');
+                if (slot) {
+                    slotElement.classList.remove('empty');
+                    slotElement.classList.add('filled');
+                    const quantity = slot.quantity || 1;
+                    slotElement.innerHTML = `
+                        ${slot.emoji}<br>
+                        <div class="slot-quantity">${quantity}x ${slot.name}</div>
+                        <div class="slot-price">💰${slot.price}</div>
+                    `;
+                    slotElement.title = `Clique para vender ${quantity}x ${slot.name} por ${slot.price} moedas cada`;
+                } else {
+                    slotElement.classList.remove('filled');
+                    slotElement.classList.add('empty');
+                    slotElement.innerHTML = '+';
+                    slotElement.title = 'Clique para adicionar produto';
+                }
             }
         }
 
@@ -5318,6 +5369,7 @@ Parabéns por sua perseverança e paixão pela agricultura!`,
                 
                 updateUI();
                 updateInventoryDisplay();
+                updateQuitandaDisplay();
                 
                 let message = `💰 Vendeu ${item} por ${finalPrice} moedas!`;
                 if (springBonus > 1) message += ' (Bônus Primavera: +10%)';
@@ -5421,52 +5473,392 @@ Parabéns por sua perseverança e paixão pela agricultura!`,
             });
         }
 
+        function sellBarnItem(item) {
+            const itemData = {
+                // Seeds
+                'trigo': {emoji: '🌾', name: 'Trigo', price: 20},
+                'milho': {emoji: '🌽', name: 'Milho', price: 20},
+                'café': {emoji: '🔴', name: 'Café', price: 20},
+                'batata': {emoji: '🥔', name: 'Batata', price: 20},
+                'tomate': {emoji: '🍅', name: 'Tomate', price: 20},
+                'cenoura': {emoji: '🥕', name: 'Cenoura', price: 20},
+                'abóbora': {emoji: '🎃', name: 'Abóbora', price: 20},
+                'brócolis': {emoji: '🥦', name: 'Brócolis', price: 20},
+                'alface': {emoji: '🥬', name: 'Alface', price: 20},
+                'uva': {emoji: '🍇', name: 'Uva', price: 20},
+                // Special items
+                'cd': {emoji: '💿', name: 'CD', price: 50},
+                'bola': {emoji: '⚽', name: 'Bola', price: 40},
+                'sapato': {emoji: '👟', name: 'Sapato', price: 35},
+                'mel': {emoji: '🍯', name: 'Mel', price: 60},
+                'pérola': {emoji: '💎', name: 'Pérola', price: 100},
+                'esmeralda': {emoji: '💚', name: 'Esmeralda', price: 200},
+                'rubi': {emoji: '❤️', name: 'Rubi', price: 180},
+                'safira': {emoji: '💙', name: 'Safira', price: 160},
+                'rosa': {emoji: '🌹', name: 'Rosa', price: 30},
+                'girassol': {emoji: '🌻', name: 'Girassol', price: 35},
+                'margarida': {emoji: '🌼', name: 'Margarida', price: 25},
+                'maçã': {emoji: '🍎', name: 'Maçã', price: 15},
+                'laranja': {emoji: '🍊', name: 'Laranja', price: 18},
+                'banana': {emoji: '🍌', name: 'Banana', price: 12},
+                'peixe': {emoji: '🐟', name: 'Peixe', price: 25},
+                'lenha': {emoji: '🪵', name: 'Lenha', price: 8},
+                'ovos': {emoji: '🥚', name: 'Ovos', price: 20},
+                'leite': {emoji: '🥛', name: 'Leite', price: 25},
+                'lã': {emoji: '🐑', name: 'Lã', price: 30},
+                'sacodecafé': {emoji: '☕', name: 'Saco de Café', price: 120},
+                'sucodeuva': {emoji: '🧃', name: 'Suco de Uva', price: 80},
+                'sacodefarinha': {emoji: '🌾', name: 'Saco de Farinha', price: 100},
+                'queijo': {emoji: '🧀', name: 'Queijo', price: 90},
+                'novelo': {emoji: '🧶', name: 'Novelo', price: 70},
+                'pão': {emoji: '🍞', name: 'Pão', price: 50}
+            };
+            
+            const data = itemData[item];
+            if (gameState.barn[item] > 0 && data) {
+                let price = data.price;
+                let springBonus = gameState.season === 0 ? 1.1 : 1;
+                let newspaperBonus = 1;
+                
+                // Check newspaper bonus
+                if (gameState.newspaperBonus && gameState.newspaperBonus.product === data.name) {
+                    const now = Date.now();
+                    if (now - gameState.newspaperBonus.timestamp <= 1800000) {
+                        newspaperBonus = 1 + (gameState.newspaperBonus.bonus / 100);
+                    }
+                }
+                
+                const finalPrice = Math.floor(price * springBonus * newspaperBonus);
+                gameState.coins += finalPrice;
+                gameState.barn[item]--;
+                
+                updateUI();
+                updateBarnDisplay();
+                updateQuitandaDisplay();
+                
+                let message = `💰 Vendeu ${data.name} por ${finalPrice} moedas!`;
+                if (springBonus > 1) message += ' (Bônus Primavera: +10%)';
+                if (newspaperBonus > 1) message += ` (Jornal: +${Math.floor((newspaperBonus - 1) * 100)}%)`;
+                
+                // Show brief alert
+                const alertDiv = document.createElement('div');
+                alertDiv.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: #4CAF50;
+                    color: white;
+                    padding: 10px 20px;
+                    border-radius: 10px;
+                    z-index: 3000;
+                    font-weight: bold;
+                `;
+                alertDiv.textContent = message;
+                document.body.appendChild(alertDiv);
+                
+                setTimeout(() => {
+                    document.body.removeChild(alertDiv);
+                }, 2000);
+            }
+        }
+
+        // Quitanda now uses inventory display - old slot functions removed
+
+        function getItemPrice(item) {
+            const seed = seeds.find(s => s.name === item);
+            
+            const specialItems = {
+                'CD': 50, 'Bola': 40, 'Sapato': 35, 'Mel': 60, 'Pérola': 100,
+                'Esmeralda': 200, 'Rubi': 180, 'Safira': 160, 'Rosa': 30,
+                'Girassol': 35, 'Margarida': 25, 'Maçã': 15, 'Laranja': 18,
+                'Banana': 12, 'Peixe': 25, 'Lenha': 8, 'Ovos': 20, 'Leite': 25,
+                'Lã': 30, 'Saco de Café': 120, 'Suco de Uva': 80, 'Saco de Farinha': 100,
+                'Queijo': 90, 'Novelo': 70, 'Pão': 50, 'Colar de Pérolas': 400,
+                'Anel de Esmeralda': 350, 'Buquê de Flores': 200, 'Pedra de Prata': 1000,
+                'Pedra de Ouro': 100000, 'Pedra de Diamante': 1000000
+            };
+            
+            if (specialItems[item]) {
+                return specialItems[item];
+            } else if (seed) {
+                return seed.price * 2; // Double the buy price
+            } else {
+                return 10; // Default price
+            }
+        }
+
+        function calculateFinalPrice(basePrice, item) {
+            let springBonus = gameState.season === 0 ? 1.1 : 1;
+            let newspaperBonus = 1;
+            
+            // Check newspaper bonus
+            if (gameState.newspaperBonus && gameState.newspaperBonus.product === item) {
+                const now = Date.now();
+                if (now - gameState.newspaperBonus.timestamp <= 1800000) {
+                    newspaperBonus = 1 + (gameState.newspaperBonus.bonus / 100);
+                }
+            }
+            
+            return Math.floor(basePrice * springBonus * newspaperBonus);
+        }
+
+        function handleQuitandaSlotClick(slotIndex) {
+            const slot = gameState.quitandaSlots[slotIndex];
+            
+            if (slot) {
+                // Slot has item - sell it
+                sellQuitandaSlot(slotIndex);
+            } else {
+                // Slot is empty - open item selector
+                openQuitandaItemSelector(slotIndex);
+            }
+        }
+
+        function openQuitandaItemSelector(slotIndex) {
+            const modal = document.getElementById('foodModal');
+            const content = document.getElementById('foodMenuContent');
+            const title = document.getElementById('foodModalTitle');
+            
+            title.textContent = '🏪 Escolha um produto para vender';
+            content.innerHTML = '';
+            
+            let hasItems = false;
+            
+            // Check inventory items
+            Object.keys(gameState.inventory).forEach(category => {
+                Object.keys(gameState.inventory[category]).forEach(item => {
+                    const quantity = gameState.inventory[category][item];
+                    if (quantity > 0) {
+                        hasItems = true;
+                        const seed = seeds.find(s => s.name === item);
+                        let emoji = seed ? seed.emoji : '';
+                        
+                        // Set emoji for special items
+                        const specialEmojis = {
+                            'CD': '💿', 'Bola': '⚽', 'Sapato': '👟', 'Mel': '🍯',
+                            'Pérola': '💎', 'Esmeralda': '💚', 'Rubi': '❤️', 'Safira': '💙',
+                            'Flor': '🌸', 'Rosa': '🌹', 'Girassol': '🌻', 'Margarida': '🌼',
+                            'Grama': '🌱', 'Maçã': '🍎', 'Laranja': '🍊', 'Banana': '🍌',
+                            'Peixe': '🐟', 'Lenha': '🪵', 'Ovos': '🥚', 'Carne Suína': '🥩',
+                            'Leite': '🥛', 'Esterco': '💩', 'Lã': '🐑', 'Saco de Café': '☕',
+                            'Suco de Uva': '🧃', 'Saco de Farinha': '🌾', 'Queijo': '🧀',
+                            'Novelo': '🧶', 'Pão': '🍞', 'Colar de Pérolas': '📿',
+                            'Anel de Esmeralda': '💍', 'Buquê de Flores': '💐',
+                            'Pedra de Prata': '🥈', 'Pedra de Ouro': '🥇', 'Pedra de Diamante': '💎'
+                        };
+                        
+                        if (specialEmojis[item]) {
+                            emoji = specialEmojis[item];
+                        }
+                        
+                        const price = getItemPrice(item);
+                        const finalPrice = calculateFinalPrice(price, item);
+                        
+                        const foodItem = document.createElement('div');
+                        foodItem.className = 'food-item';
+                        foodItem.innerHTML = `${emoji}<br>${item}<br><small>💰${finalPrice} cada</small><br><small>Disponível: ${quantity}</small>`;
+                        foodItem.onclick = () => addToQuitandaSlot(slotIndex, category, item, emoji, finalPrice);
+                        content.appendChild(foodItem);
+                    }
+                });
+            });
+            
+            // Check barn items
+            const barnItems = [
+                {name: 'Ossos', key: 'bones', emoji: '🦴', price: 25},
+                {name: 'Chaves', key: 'keys', emoji: '🗝️', price: 500},
+                {name: 'Feno', key: 'hay', emoji: '🌾', price: 20},
+                {name: 'Carvão', key: 'coal', emoji: '⚫', price: 15},
+                {name: 'Lenha', key: 'wood', emoji: '🪵', price: 8},
+                {name: 'Etanol', key: 'ethanol', emoji: '⛽', price: 25},
+                {name: 'Ração Cachorro', key: 'dogFood', emoji: '🥩', price: 30},
+                {name: 'Vacinas', key: 'vaccines', emoji: '💉', price: 40},
+                {name: 'Ração Galinha', key: 'chickenFeed', emoji: '🐔', price: 35},
+                {name: 'Ração Porco', key: 'pigFeed', emoji: '🐷', price: 45},
+                {name: 'Frango Cru', key: 'rawChicken', emoji: '🐓', price: 25},
+                {name: 'Rosa', key: 'rosa', emoji: '🌹', price: 30},
+                {name: 'Girassol', key: 'girassol', emoji: '🌻', price: 35},
+                {name: 'Margarida', key: 'margarida', emoji: '🌼', price: 25},
+                {name: 'Chá', key: 'chá', emoji: '🍵', price: 50},
+                {name: 'Salada', key: 'salada', emoji: '🥗', price: 40},
+                {name: 'Ensopado', key: 'stew', emoji: '🍲', price: 60},
+                {name: 'Bife', key: 'steak', emoji: '🥩', price: 80},
+                {name: 'Frango', key: 'chicken', emoji: '🍗', price: 70},
+                {name: 'Peixe Cozido', key: 'cookedFish', emoji: '🐟', price: 75},
+                {name: 'Pão', key: 'pão', emoji: '🍞', price: 50},
+                {name: 'Bolo de Aniversário', key: 'birthdayCake', emoji: '🎂', price: 200}
+            ];
+            
+            barnItems.forEach(item => {
+                const quantity = gameState.barn[item.key] || 0;
+                if (quantity > 0) {
+                    hasItems = true;
+                    const finalPrice = calculateFinalPrice(item.price, item.name);
+                    
+                    const foodItem = document.createElement('div');
+                    foodItem.className = 'food-item';
+                    foodItem.innerHTML = `${item.emoji}<br>${item.name}<br><small>💰${finalPrice} cada</small><br><small>Disponível: ${quantity}</small>`;
+                    foodItem.onclick = () => addToQuitandaSlot(slotIndex, 'barn', item.name, item.emoji, finalPrice, item.key);
+                    content.appendChild(foodItem);
+                }
+            });
+            
+            if (!hasItems) {
+                content.innerHTML = '<p>Você não tem produtos para vender!</p>';
+            }
+            
+            modal.style.display = 'flex';
+        }
+
+        function addToQuitandaSlot(slotIndex, category, itemName, emoji, price, barnKey = null) {
+            // Check if item is available
+            let available = false;
+            
+            if (category === 'barn') {
+                available = gameState.barn[barnKey] > 0;
+                if (available) {
+                    gameState.barn[barnKey]--;
+                }
+            } else {
+                available = gameState.inventory[category][itemName] > 0;
+                if (available) {
+                    gameState.inventory[category][itemName]--;
+                }
+            }
+            
+            if (available) {
+                // Check if slot already has the same item
+                if (gameState.quitandaSlots[slotIndex] && gameState.quitandaSlots[slotIndex].name === itemName) {
+                    // Same item - increase quantity
+                    gameState.quitandaSlots[slotIndex].quantity++;
+                } else {
+                    // Check if there's another slot with the same item to stack with
+                    let existingSlotIndex = -1;
+                    for (let i = 0; i < gameState.quitandaSlots.length; i++) {
+                        if (gameState.quitandaSlots[i] && gameState.quitandaSlots[i].name === itemName) {
+                            existingSlotIndex = i;
+                            break;
+                        }
+                    }
+                    
+                    if (existingSlotIndex !== -1) {
+                        // Stack with existing item
+                        gameState.quitandaSlots[existingSlotIndex].quantity++;
+                        alert(`🏪 ${itemName} foi empilhado! Total: ${gameState.quitandaSlots[existingSlotIndex].quantity}x`);
+                    } else {
+                        // New item or different item
+                        gameState.quitandaSlots[slotIndex] = {
+                            name: itemName,
+                            emoji: emoji,
+                            price: price,
+                            category: category,
+                            barnKey: barnKey,
+                            quantity: 1
+                        };
+                        alert(`🏪 ${itemName} foi adicionado à quitanda por ${price} moedas cada!`);
+                    }
+                }
+                
+                updateInventoryDisplay();
+                updateBarnDisplay();
+                updateQuitandaSlotsDisplay();
+                closeFoodMenu();
+            }
+        }
+
+        function sellQuitandaSlot(slotIndex) {
+            const slot = gameState.quitandaSlots[slotIndex];
+            if (slot) {
+                const quantity = slot.quantity || 1;
+                const totalPrice = slot.price * quantity;
+                
+                gameState.coins += totalPrice;
+                gameState.quitandaSlots[slotIndex] = null;
+                
+                updateUI();
+                updateQuitandaSlotsDisplay();
+                
+                // Show sale notification
+                const alertDiv = document.createElement('div');
+                alertDiv.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: #4CAF50;
+                    color: white;
+                    padding: 10px 20px;
+                    border-radius: 10px;
+                    z-index: 3000;
+                    font-weight: bold;
+                `;
+                alertDiv.textContent = `💰 ${quantity}x ${slot.name} vendido por ${totalPrice} moedas!`;
+                document.body.appendChild(alertDiv);
+                
+                setTimeout(() => {
+                    document.body.removeChild(alertDiv);
+                }, 2000);
+            }
+        }
+
+        function sellAllQuitandaSlots() {
+            let totalEarnings = 0;
+            let itemsSold = 0;
+            
+            gameState.quitandaSlots.forEach((slot, index) => {
+                if (slot) {
+                    const quantity = slot.quantity || 1;
+                    totalEarnings += slot.price * quantity;
+                    itemsSold += quantity;
+                    gameState.quitandaSlots[index] = null;
+                }
+            });
+            
+            if (totalEarnings > 0) {
+                gameState.coins += totalEarnings;
+                updateUI();
+                updateQuitandaSlotsDisplay();
+                
+                // Show success message
+                const alertDiv = document.createElement('div');
+                alertDiv.style.cssText = `
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    background: #4CAF50;
+                    color: white;
+                    padding: 20px 30px;
+                    border-radius: 15px;
+                    z-index: 3000;
+                    font-weight: bold;
+                    font-size: 18px;
+                    text-align: center;
+                    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+                `;
+                alertDiv.textContent = `💰 Vendeu ${itemsSold} itens por ${totalEarnings} moedas!`;
+                document.body.appendChild(alertDiv);
+                
+                setTimeout(() => {
+                    document.body.removeChild(alertDiv);
+                }, 3000);
+            } else {
+                alert('📦 Não há itens para vender na quitanda!');
+            }
+        }
+
+        function updateQuitandaDisplay() {
+            updateQuitandaSlotsDisplay();
+        }
+
         function updateInventoryDisplay() {
+            // Inventory display is now only for reference - selling happens through quitanda slots
             const categories = ['farmProducts', 'fruitsVegetables', 'others'];
             const containers = ['farmProducts', 'fruitsVegetables', 'others'];
             
-            // Item prices for display
-            const itemPrices = {
-                'CD': 50,
-                'Bola': 40,
-                'Sapato': 35,
-                'Mel': 60,
-                'Pérola': 100,
-                'Esmeralda': 200,
-                'Rubi': 180,
-                'Safira': 160,
-                'Flor': 25,
-                'Rosa': 30,
-                'Girassol': 35,
-                'Margarida': 25,
-                'Grama': 5,
-                'Maçã': 15,
-                'Laranja': 18,
-                'Banana': 12,
-                'Peixe': 25,
-                'Lenha': 8,
-                'Ovos': 20,
-                'Carne Suína': 45,
-                'Leite': 25,
-                'Esterco': 15,
-                'Lã': 30,
-                'Saco de Café': 120,
-                'Suco de Uva': 80,
-                'Saco de Farinha': 100,
-                'Queijo': 90,
-                'Novelo': 70,
-                'Pão': 50,
-                'Colar de Pérolas': 400,
-                'Anel de Esmeralda': 350,
-                'Buquê de Flores': 200,
-                'Pedra de Prata': 1000,
-                'Pedra de Ouro': 100000,
-                'Pedra de Diamante': 1000000,
-                'Abóbora': 27
-            };
-            
             categories.forEach((category, index) => {
                 const container = document.getElementById(containers[index]);
+                if (!container) return; // Skip if container doesn't exist
+                
                 container.innerHTML = '';
                 
                 Object.keys(gameState.inventory[category]).forEach(item => {
@@ -5475,89 +5867,34 @@ Parabéns por sua perseverança e paixão pela agricultura!`,
                         const seed = seeds.find(s => s.name === item);
                         const itemDiv = document.createElement('div');
                         itemDiv.className = 'inventory-item';
-                        itemDiv.style.cursor = 'pointer';
-                        itemDiv.title = 'Clique para vender';
                         
                         let emoji = seed ? seed.emoji : '';
-                        let price = 0;
                         
                         // Set emoji for special items
                         const specialEmojis = {
-                            'CD': '💿',
-                            'Bola': '⚽',
-                            'Sapato': '👟',
-                            'Mel': '🍯',
-                            'Pérola': '💎',
-                            'Esmeralda': '💚',
-                            'Rubi': '❤️',
-                            'Safira': '💙',
-                            'Flor': '🌸',
-                            'Rosa': '🌹',
-                            'Girassol': '🌻',
-                            'Margarida': '🌼',
-                            'Grama': '🌱',
-                            'Maçã': '🍎',
-                            'Laranja': '🍊',
-                            'Banana': '🍌',
-                            'Peixe': '🐟',
-                            'Lenha': '🪵',
-                            'Ovos': '🥚',
-                            'Carne Suína': '🥩',
-                            'Leite': '🥛',
-                            'Esterco': '💩',
-                            'Lã': '🐑',
-                            'Saco de Café': '☕',
-                            'Suco de Uva': '🧃',
-                            'Saco de Farinha': '🌾',
-                            'Queijo': '🧀',
-                            'Novelo': '🧶',
-                            'Pão': '🍞',
-                            'Colar de Pérolas': '📿',
-                            'Anel de Esmeralda': '💍',
-                            'Buquê de Flores': '💐',
-                            'Pedra de Prata': '🥈',
-                            'Pedra de Ouro': '🥇',
-                            'Pedra de Diamante': '💎'
+                            'CD': '💿', 'Bola': '⚽', 'Sapato': '👟', 'Mel': '🍯',
+                            'Pérola': '💎', 'Esmeralda': '💚', 'Rubi': '❤️', 'Safira': '💙',
+                            'Flor': '🌸', 'Rosa': '🌹', 'Girassol': '🌻', 'Margarida': '🌼',
+                            'Grama': '🌱', 'Maçã': '🍎', 'Laranja': '🍊', 'Banana': '🍌',
+                            'Peixe': '🐟', 'Lenha': '🪵', 'Ovos': '🥚', 'Carne Suína': '🥩',
+                            'Leite': '🥛', 'Esterco': '💩', 'Lã': '🐑', 'Saco de Café': '☕',
+                            'Suco de Uva': '🧃', 'Saco de Farinha': '🌾', 'Queijo': '🧀',
+                            'Novelo': '🧶', 'Pão': '🍞', 'Colar de Pérolas': '📿',
+                            'Anel de Esmeralda': '💍', 'Buquê de Flores': '💐',
+                            'Pedra de Prata': '🥈', 'Pedra de Ouro': '🥇', 'Pedra de Diamante': '💎'
                         };
                         
                         if (specialEmojis[item]) {
                             emoji = specialEmojis[item];
                         }
                         
-                        // Calculate price
-                        if (seed) {
-                            price = seed.price * 2;
-                        } else {
-                            price = itemPrices[item] || 10;
-                        }
-                        
-                        let springBonus = gameState.season === 0 ? 1.1 : 1;
-                        let newspaperBonus = 1;
-                        
-                        // Check newspaper bonus
-                        if (gameState.newspaperBonus && gameState.newspaperBonus.product === item) {
-                            const now = Date.now();
-                            // Bonus lasts for 30 minutes
-                            if (now - gameState.newspaperBonus.timestamp <= 1800000) {
-                                newspaperBonus = 1 + (gameState.newspaperBonus.bonus / 100);
-                            }
-                        }
-                        
-                        let finalPrice = Math.floor(price * springBonus * newspaperBonus);
-                        
-                        let priceText = `💰 ${finalPrice} cada`;
-                        if (newspaperBonus > 1) {
-                            priceText += ` 📰`;
-                        }
-                        
                         itemDiv.innerHTML = `
                             <div style="display: flex; flex-direction: column; align-items: flex-start;">
                                 <span>${emoji} ${item}</span>
-                                <small style="color: #666;">${priceText}</small>
+                                <small style="color: #666;">Use na quitanda para vender</small>
                             </div>
                             <span style="font-weight: bold;">${quantity}x</span>
                         `;
-                        itemDiv.onclick = () => sellItem(category, item);
                         container.appendChild(itemDiv);
                     }
                 });
@@ -5565,32 +5902,159 @@ Parabéns por sua perseverança e paixão pela agricultura!`,
         }
 
         // Machine Functions
+        function addIngredientToComposter(slotIndex) {
+            if (gameState.machines.composter.ingredientSlots[slotIndex]) {
+                alert('Este slot já está ocupado!');
+                return;
+            }
+
+            // Show ingredient selection modal
+            const modal = document.getElementById('foodModal');
+            const content = document.getElementById('foodMenuContent');
+            const title = document.getElementById('foodModalTitle');
+            
+            title.textContent = '🗑️ Escolha um ingrediente';
+            content.innerHTML = '';
+            
+            // Available ingredients for composter
+            const ingredients = [
+                // From composter storage
+                {name: 'Flor', emoji: '🌸', source: 'composter.flowers', available: gameState.machineStorage.composter.flowers},
+                {name: 'Galho', emoji: '🌿', source: 'composter.branches', available: gameState.machineStorage.composter.branches},
+                {name: 'Esterco', emoji: '💩', source: 'composter.manure', available: gameState.machineStorage.composter.manure}
+            ];
+            
+            let hasIngredients = false;
+            
+            ingredients.forEach(ingredient => {
+                if (ingredient.available > 0) {
+                    hasIngredients = true;
+                    const ingredientDiv = document.createElement('div');
+                    ingredientDiv.className = 'food-item';
+                    ingredientDiv.innerHTML = `${ingredient.emoji}<br>${ingredient.name}<br><small>Disponível: ${ingredient.available}</small>`;
+                    ingredientDiv.onclick = () => selectComposterIngredient(slotIndex, ingredient);
+                    content.appendChild(ingredientDiv);
+                }
+            });
+            
+            if (!hasIngredients) {
+                content.innerHTML = '<p>Você não tem ingredientes disponíveis! Colete flores no campo, galhos cortando troncos e esterco das vacas.</p>';
+            }
+            
+            modal.style.display = 'flex';
+        }
+
+        function selectComposterIngredient(slotIndex, ingredient) {
+            // Remove ingredient from source
+            if (ingredient.source === 'composter.flowers') {
+                gameState.machineStorage.composter.flowers--;
+            } else if (ingredient.source === 'composter.branches') {
+                gameState.machineStorage.composter.branches--;
+            } else if (ingredient.source === 'composter.manure') {
+                gameState.machineStorage.composter.manure--;
+            }
+            
+            // Add to composter slot
+            gameState.machines.composter.ingredientSlots[slotIndex] = {
+                name: ingredient.name,
+                emoji: ingredient.emoji
+            };
+            
+            updateComposterDisplay();
+            updateMachineStorageDisplay();
+            closeFoodMenu();
+        }
+
+        function clearComposterSlots() {
+            // Return ingredients to storage
+            gameState.machines.composter.ingredientSlots.forEach(slot => {
+                if (slot) {
+                    if (slot.name === 'Flor') {
+                        gameState.machineStorage.composter.flowers++;
+                    } else if (slot.name === 'Galho') {
+                        gameState.machineStorage.composter.branches++;
+                    } else if (slot.name === 'Esterco') {
+                        gameState.machineStorage.composter.manure++;
+                    }
+                }
+            });
+            
+            // Clear slots
+            gameState.machines.composter.ingredientSlots = [null, null, null];
+            
+            updateComposterDisplay();
+            updateMachineStorageDisplay();
+        }
+
+        function updateComposterDisplay() {
+            // Update ingredient slots
+            for (let i = 0; i < 3; i++) {
+                const slot = document.getElementById(`composterSlot${i}`);
+                const ingredient = gameState.machines.composter.ingredientSlots[i];
+                
+                if (ingredient) {
+                    slot.textContent = ingredient.emoji;
+                    slot.style.background = '#90EE90';
+                    slot.style.color = 'black';
+                    slot.onclick = () => removeIngredientFromComposter(i);
+                } else {
+                    slot.textContent = '+';
+                    slot.style.background = '#8B4513';
+                    slot.style.color = 'white';
+                    slot.onclick = () => addIngredientToComposter(i);
+                }
+            }
+        }
+
+        function removeIngredientFromComposter(slotIndex) {
+            const ingredient = gameState.machines.composter.ingredientSlots[slotIndex];
+            if (ingredient) {
+                // Return ingredient to storage
+                if (ingredient.name === 'Flor') {
+                    gameState.machineStorage.composter.flowers++;
+                } else if (ingredient.name === 'Galho') {
+                    gameState.machineStorage.composter.branches++;
+                } else if (ingredient.name === 'Esterco') {
+                    gameState.machineStorage.composter.manure++;
+                }
+                
+                gameState.machines.composter.ingredientSlots[slotIndex] = null;
+                
+                updateComposterDisplay();
+                updateMachineStorageDisplay();
+            }
+        }
+
         function startComposting() {
             if (gameState.machines.composter.working) return;
             
-            if (gameState.machineStorage.composter.flowers >= 1 && 
-                gameState.machineStorage.composter.branches >= 1 && 
-                gameState.machineStorage.composter.manure >= 2) {
-                
-                gameState.machineStorage.composter.flowers--;
-                gameState.machineStorage.composter.branches--;
-                gameState.machineStorage.composter.manure -= 2;
+            const slots = gameState.machines.composter.ingredientSlots;
+            
+            // Check if we have the right ingredients in slots
+            const hasFlower = slots.some(slot => slot && slot.name === 'Flor');
+            const hasBranch = slots.some(slot => slot && slot.name === 'Galho');
+            const manureCount = slots.filter(slot => slot && slot.name === 'Esterco').length;
+            
+            if (hasFlower && hasBranch && manureCount >= 2) {
+                // Clear ingredient slots
+                gameState.machines.composter.ingredientSlots = [null, null, null];
                 
                 gameState.machines.composter.working = true;
                 gameState.machines.composter.startTime = Date.now();
                 
-                updateMachineStorageDisplay();
+                updateComposterDisplay();
                 updateMachineStatus('composter');
                 
                 setTimeout(() => {
                     gameState.machines.composter.working = false;
-                    gameState.barn.adubo = (gameState.barn.adubo || 0) + 8;
-                    updateBarnDisplay();
+                    gameState.fertilizer += 8;
+                    updateUI();
                     updateMachineStatus('composter');
+                    updateComposterDisplay();
                     alert('🗑️ Compostagem concluída! +8 Adubos!');
                 }, 60000); // 1 minute
             } else {
-                alert('Você precisa de: 1 Flor, 1 Galho e 2 Estercos (na Composteira)!');
+                alert('Você precisa de: 1 Flor, 1 Galho e 2 Estercos nos slots!');
             }
         }
 
@@ -6369,6 +6833,9 @@ Parabéns por sua perseverança e paixão pela agricultura!`,
                 {name: 'Ração Galinha', emoji: '🐔', quantity: gameState.barn.chickenFeed || 0},
                 {name: 'Ração Porco', emoji: '🐷', quantity: gameState.barn.pigFeed || 0},
                 {name: 'Frango Cru', emoji: '🐓', quantity: gameState.barn.rawChicken || 0},
+                {name: 'Rosa', emoji: '🌹', quantity: gameState.barn.rosa || 0},
+                {name: 'Girassol', emoji: '🌻', quantity: gameState.barn.girassol || 0},
+                {name: 'Margarida', emoji: '🌼', quantity: gameState.barn.margarida || 0},
                 {name: 'Chá', emoji: '🍵', quantity: gameState.barn.chá || 0},
                 {name: 'Salada', emoji: '🥗', quantity: gameState.barn.salada || 0},
                 {name: 'Ensopado', emoji: '🍲', quantity: gameState.barn.stew || 0},
@@ -7165,19 +7632,38 @@ Parabéns por sua perseverança e paixão pela agricultura!`,
                 const seed = seeds[plot.seedType];
                 let harvestAmount = 1; // No season bonus in greenhouse
                 
-                // Store all items in barn
-                const barnKey = seed.name.toLowerCase().replace(' ', '');
-                if (!gameState.barn[barnKey]) {
-                    gameState.barn[barnKey] = 0;
+                // Store items in appropriate inventory category
+                const category = seed.category;
+                if (!gameState.inventory[category][seed.name]) {
+                    gameState.inventory[category][seed.name] = 0;
                 }
-                gameState.barn[barnKey] += harvestAmount;
+                gameState.inventory[category][seed.name] += harvestAmount;
+                
+                // Special handling for coffee - goes to machine storage
+                if (seed.name === 'Café') {
+                    gameState.machineStorage.coffeeRoaster.coffee = (gameState.machineStorage.coffeeRoaster.coffee || 0) + harvestAmount;
+                    gameState.inventory[category][seed.name] -= harvestAmount; // Remove from inventory
+                }
+                
+                // Special handling for grapes - goes to machine storage
+                if (seed.name === 'Uva') {
+                    gameState.machineStorage.juiceMachine.grapes = (gameState.machineStorage.juiceMachine.grapes || 0) + harvestAmount;
+                    gameState.inventory[category][seed.name] -= harvestAmount; // Remove from inventory
+                }
+                
+                // Special handling for wheat - goes to machine storage
+                if (seed.name === 'Trigo') {
+                    gameState.machineStorage.mill.wheat = (gameState.machineStorage.mill.wheat || 0) + harvestAmount;
+                    gameState.inventory[category][seed.name] -= harvestAmount; // Remove from inventory
+                }
                 
                 // Reset plot
                 plot.state = 'empty';
                 plot.seedType = null;
                 plot.plantTime = null;
                 updateGreenhousePlotDisplay(plotIndex);
-                updateBarnDisplay();
+                updateInventoryDisplay();
+                updateMachineStorageDisplay();
                 useEnergy(1);
             }
         }
@@ -7272,8 +7758,14 @@ Parabéns por sua perseverança e paixão pela agricultura!`,
             if (gameState.flowers[type] > 0) {
                 gameState.flowers[type]--;
                 
-                // Add flower to barn
-                const flowerKey = type.toLowerCase();
+                // Add flower to barn instead of inventory
+                const flowerNames = {
+                    rosa: 'rosa',
+                    girassol: 'girassol',
+                    margarida: 'margarida'
+                };
+                
+                const flowerKey = flowerNames[type];
                 if (!gameState.barn[flowerKey]) {
                     gameState.barn[flowerKey] = 0;
                 }
@@ -7285,12 +7777,13 @@ Parabéns por sua perseverança e paixão pela agricultura!`,
                 
                 // Check if should drop herb (every 4 flowers)
                 if (gameState.flowersHarvested % 4 === 0) {
-                    gameState.barn.ervas = (gameState.barn.ervas || 0) + 1;
-                    alert('🌿 Uma erva apareceu no celeiro!');
+                    gameState.machineStorage.stove.herbs = (gameState.machineStorage.stove.herbs || 0) + 1;
+                    alert('🌿 Uma erva apareceu no fogão!');
                 }
                 
                 updateFlowersDisplay();
                 updateBarnDisplay();
+                updateMachineStorageDisplay();
                 useEnergy(1);
                 
                 // Regrow after 5 minutes
@@ -7484,23 +7977,31 @@ Parabéns por sua perseverança e paixão pela agricultura!`,
                 const canProduce = gameState.season !== 3 || gameState.bonfire.lit;
                 
                 if (canProduce) {
-                    // Produce items - all go to barn now
+                    // Produce items
                     if (animalType === 'chicken') {
-                        gameState.barn.ovos = (gameState.barn.ovos || 0) + 3;
+                        if (!gameState.inventory.others['Ovos']) {
+                            gameState.inventory.others['Ovos'] = 0;
+                        }
+                        gameState.inventory.others['Ovos'] += 3;
                         // 20% chance to produce raw chicken
                         if (Math.random() < 0.2) {
                             gameState.barn.rawChicken = (gameState.barn.rawChicken || 0) + 1;
                         }
                     } else if (animalType === 'pig') {
-                        gameState.barn.carnesuína = (gameState.barn.carnesuína || 0) + 1;
+                        gameState.machineStorage.stove.porkMeat = (gameState.machineStorage.stove.porkMeat || 0) + 1;
                     } else if (animalType === 'sheep') {
-                        gameState.barn.lã = (gameState.barn.lã || 0) + 2;
+                        gameState.machineStorage.spinningMachine.wool = (gameState.machineStorage.spinningMachine.wool || 0) + 2;
                     } else if (animalType === 'cow') {
-                        gameState.barn.leite = (gameState.barn.leite || 0) + 3;
-                        gameState.barn.esterco = (gameState.barn.esterco || 0) + 1;
+                        if (!gameState.inventory.others['Leite']) {
+                            gameState.inventory.others['Leite'] = 0;
+                        }
+                        gameState.inventory.others['Leite'] += 3;
+                        gameState.machineStorage.composter.manure = (gameState.machineStorage.composter.manure || 0) + 1;
                     }
                     
+                    updateInventoryDisplay();
                     updateBarnDisplay();
+                    updateMachineStorageDisplay();
                     
                     // Show production notification
                     const products = {
@@ -7885,20 +8386,20 @@ Parabéns por sua perseverança e paixão pela agricultura!`,
             if (gameState.trees[type].fruits > 0) {
                 gameState.trees[type].fruits--;
                 
-                const fruitKeys = {
-                    apple: 'maçã',
-                    orange: 'laranja', 
-                    banana: 'banana'
+                const fruitNames = {
+                    apple: 'Maçã',
+                    orange: 'Laranja', 
+                    banana: 'Banana'
                 };
                 
-                const fruitKey = fruitKeys[type];
-                if (!gameState.barn[fruitKey]) {
-                    gameState.barn[fruitKey] = 0;
+                const fruitName = fruitNames[type];
+                if (!gameState.inventory.fruitsVegetables[fruitName]) {
+                    gameState.inventory.fruitsVegetables[fruitName] = 0;
                 }
-                gameState.barn[fruitKey]++;
+                gameState.inventory.fruitsVegetables[fruitName]++;
                 
                 updateTreesDisplay();
-                updateBarnDisplay();
+                updateInventoryDisplay();
                 useEnergy(1);
             }
         }
@@ -7911,17 +8412,23 @@ Parabéns por sua perseverança e paixão pela agricultura!`,
                 gameState.fish[index] = false;
                 gameState.fishCaught++;
                 
-                gameState.barn.peixe = (gameState.barn.peixe || 0) + 1;
+                if (!gameState.inventory.others['Peixe']) {
+                    gameState.inventory.others['Peixe'] = 0;
+                }
+                gameState.inventory.others['Peixe']++;
                 
                 // Drop pearl every 5 fish
                 if (gameState.fishCaught % 5 === 0) {
-                    gameState.barn.pérola = (gameState.barn.pérola || 0) + 1;
+                    if (!gameState.inventory.others['Pérola']) {
+                        gameState.inventory.others['Pérola'] = 0;
+                    }
+                    gameState.inventory.others['Pérola']++;
                     alert('💎 Uma pérola apareceu!');
                 }
                 
                 updateFishingRodStatus();
                 updateFishDisplay();
-                updateBarnDisplay();
+                updateInventoryDisplay();
                 useEnergy(1);
             } else if (!gameState.hasFishingRod) {
                 alert('Você precisa de uma vara de pesca!');
@@ -7949,14 +8456,27 @@ Parabéns por sua perseverança e paixão pela agricultura!`,
             rock.hits++;
             
             // Random gem drop
-            const gems = ['esmeralda', 'rubi', 'safira', 'coal'];
+            const gems = [
+                {name: 'Esmeralda', category: 'others'},
+                {name: 'Rubi', category: 'others'},
+                {name: 'Safira', category: 'others'},
+                {name: 'Carvão', category: 'barn'}
+            ];
             const randomGem = gems[Math.floor(Math.random() * gems.length)];
             
-            if (!gameState.barn[randomGem]) {
-                gameState.barn[randomGem] = 0;
+            if (randomGem.category === 'barn') {
+                if (!gameState.barn.coal) {
+                    gameState.barn.coal = 0;
+                }
+                gameState.barn.coal++;
+                updateBarnDisplay();
+            } else {
+                if (!gameState.inventory.others[randomGem.name]) {
+                    gameState.inventory.others[randomGem.name] = 0;
+                }
+                gameState.inventory.others[randomGem.name]++;
+                updateInventoryDisplay();
             }
-            gameState.barn[randomGem]++;
-            updateBarnDisplay();
             
             // Check if rock needs rest
             if (rock.hits >= 3) {
@@ -8090,7 +8610,13 @@ Parabéns por sua perseverança e paixão pela agricultura!`,
         function loadGame() {
             const saved = localStorage.getItem('realFarmSave');
             if (saved) {
-                gameState = {...gameState, ...JSON.parse(saved)};
+                const savedState = JSON.parse(saved);
+                gameState = {...gameState, ...savedState};
+                
+                // Ensure seasonTime is properly initialized
+                if (typeof gameState.seasonTime !== 'number' || gameState.seasonTime <= 0) {
+                    gameState.seasonTime = 3600; // Reset to 1 hour if invalid
+                }
                 
                 // Update UI elements based on loaded state
                 if (gameState.hasWell) {
@@ -8233,6 +8759,16 @@ Parabéns por sua perseverança e paixão pela agricultura!`,
                 gameState.hasFlowerField = true;
                 document.getElementById('flowerField').style.display = 'block';
                 
+                // Initialize flowers if not present
+                if (!gameState.flowers) {
+                    gameState.flowers = {
+                        rosa: 3,
+                        girassol: 3,
+                        margarida: 3,
+                        lastHarvest: 0
+                    };
+                }
+                
                 if (gameState.hasProducerFair) {
                     document.getElementById('producerFair').style.display = 'block';
                 }
@@ -8248,13 +8784,16 @@ Parabéns por sua perseverança e paixão pela agricultura!`,
                 updatePetUI();
                 updateOrdersDisplay();
                 
-                // Initialize quitanda if not present
-                if (!gameState.quitanda) {
-                    gameState.quitanda = {
-                        slots: Array(20).fill(null)
-                    };
+                // Initialize fish and rocks if not present
+                if (!gameState.fish || gameState.fish.length === 0) {
+                    gameState.fish = Array(4).fill(true);
                 }
+                if (!gameState.rocks || gameState.rocks.length === 0) {
+                    gameState.rocks = Array(3).fill().map(() => ({ hits: 0, resting: false, restTime: 0 }));
+                }
+                
                 updateQuitandaDisplay();
+                updateQuitandaSlotsDisplay();
                 updateChickensDisplay();
                 updatePigsDisplay();
                 updateSheepDisplay();
@@ -8298,15 +8837,9 @@ Parabéns por sua perseverança e paixão pela agricultura!`,
                         document.getElementById('composter').style.display = 'block';
                         document.getElementById('composterShop').style.display = 'none';
                         
-                        // Initialize composter slots if not present
-                        if (!gameState.machineStorage.composter.flowerSlot) {
-                            gameState.machineStorage.composter.flowerSlot = 0;
-                        }
-                        if (!gameState.machineStorage.composter.branchSlot) {
-                            gameState.machineStorage.composter.branchSlot = 0;
-                        }
-                        if (!gameState.machineStorage.composter.manureSlot) {
-                            gameState.machineStorage.composter.manureSlot = 0;
+                        // Initialize composter ingredient slots if not present
+                        if (!gameState.machines.composter.ingredientSlots) {
+                            gameState.machines.composter.ingredientSlots = [null, null, null];
                         }
                         
                         setTimeout(() => updateComposterDisplay(), 100);
@@ -8434,5 +8967,5 @@ Parabéns por sua perseverança e paixão pela agricultura!`,
         // Initialize game when page loads
         window.onload = initGame;
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96c2b632d33300a9',t:'MTc1NDY5NDg4NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96c358d2f5650083',t:'MTc1NDcwMTU0NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
