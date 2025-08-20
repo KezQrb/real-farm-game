@@ -846,8 +846,8 @@
                     <div class="mt-2">
                         <div class="text-xs text-blue-600 font-semibold" id="timer-${customerId}">⏰ 7:00</div>
                         <div class="flex space-x-2 justify-center mt-1">
-                            <button class="bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-1 rounded-lg transition-all z-10" onclick="removeCustomer('${customerId}')">✕</button>
-                            <button class="bg-green-500 hover:bg-green-600 text-white text-xs px-3 py-1 rounded-lg transition-all" onclick="serveCustomer('${customerId}')">SERVIR</button>
+                            <button class="remove-btn bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-1 rounded-lg transition-all z-10" data-customer-id="${customerId}">✕</button>
+                            <button class="serve-btn bg-green-500 hover:bg-green-600 text-white text-xs px-3 py-1 rounded-lg transition-all" data-customer-id="${customerId}">SERVIR</button>
                         </div>
                     </div>
                 </div>
@@ -865,6 +865,22 @@
             };
             
             gameState.customers.push(customerData);
+            
+            // Adicionar eventos aos botões
+            const serveBtn = customerDiv.querySelector('.serve-btn');
+            const removeBtn = customerDiv.querySelector('.remove-btn');
+            
+            serveBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                serveCustomer(customerId);
+            });
+            
+            removeBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                removeCustomer(customerId);
+            });
             
             // Timer de espera
             const waitingInterval = setInterval(() => {
@@ -901,16 +917,15 @@
             }, 1000);
         }
 
-        // Servir cliente - MÉTODO SIMPLIFICADO
-        window.serveCustomer = function(customerId) {
+        // NOVO SISTEMA DE SERVIR CLIENTES - MÉTODO DIRETO
+        function serveCustomer(customerId) {
             const customer = gameState.customers.find(c => c.id === customerId);
             if (!customer || customer.status !== 'waiting') return;
             
-            // Método simples: verificar se TODOS os itens do pedido estão no balcão
+            // Verificar se todos os itens estão no balcão
             let canServe = true;
             const missingItems = [];
             
-            // Para cada item do pedido, verificar se existe no balcão
             for (const neededItem of customer.order) {
                 let found = false;
                 for (let i = 0; i < gameState.balcao.length; i++) {
@@ -926,36 +941,35 @@
             }
             
             if (!canServe) {
-                // Mostrar erro visual
-                customer.element.classList.add('bg-red-200', 'border-red-500');
+                // Mostrar erro
+                customer.element.style.backgroundColor = '#fecaca';
+                customer.element.style.borderColor = '#ef4444';
                 
-                const originalHTML = customer.element.innerHTML;
+                const originalContent = customer.element.innerHTML;
                 customer.element.innerHTML = `
                     <div class="text-center">
                         <div class="text-2xl mb-2">❌</div>
-                        <div class="font-semibold text-sm text-red-700">FALTAM NO BALCÃO:</div>
+                        <div class="font-semibold text-sm text-red-700">FALTAM:</div>
                         <div class="flex space-x-1 justify-center mt-1">
                             ${missingItems.map(item => `<span class="text-lg">${itemEmojis[item]}</span>`).join('')}
                         </div>
-                        <div class="text-xs text-gray-600 mt-2">Coloque os itens no balcão primeiro!</div>
                     </div>
                 `;
                 
                 setTimeout(() => {
-                    if (customer.element && customer.element.parentNode) {
-                        customer.element.innerHTML = originalHTML;
-                        customer.element.classList.remove('bg-red-200', 'border-red-500');
-                    }
-                }, 3000);
+                    customer.element.innerHTML = originalContent;
+                    customer.element.style.backgroundColor = '';
+                    customer.element.style.borderColor = '';
+                }, 2000);
                 return;
             }
             
-            // SUCESSO! Remover itens do balcão
+            // Remover itens do balcão
             for (const item of customer.order) {
                 for (let i = 0; i < gameState.balcao.length; i++) {
                     if (gameState.balcao[i] === item) {
-                        gameState.balcao[i] = null; // Remove o primeiro item encontrado
-                        break; // Para de procurar este item
+                        gameState.balcao[i] = null;
+                        break;
                     }
                 }
             }
@@ -963,51 +977,53 @@
             
             // Cliente começa a comer
             customer.status = 'eating';
-            customer.eatingTimeLeft = 30; // 30 segundos para teste rápido
+            customer.eatingTimeLeft = 20; // 20 segundos
             
             customer.element.innerHTML = `
                 <div class="text-center">
                     <div class="text-3xl mb-2">${customer.emoji}</div>
                     <div class="font-semibold text-sm">${customer.name}</div>
                     <div class="text-xs text-green-600 mt-1">😋 Comendo...</div>
-                    <div class="flex space-x-1 justify-center mt-1">
-                        ${customer.order.map(item => `<span class="text-lg">${itemEmojis[item]}</span>`).join('')}
-                    </div>
-                    <div class="text-xs text-blue-600 font-semibold mt-2" id="eating-timer-${customerId}">🍽️ 0:30</div>
+                    <div class="text-xs text-blue-600 font-semibold mt-2" id="eating-${customerId}">🍽️ 0:20</div>
                 </div>
             `;
-            customer.element.className = 'customer bg-yellow-100 p-3 rounded-lg m-2 border-2 border-yellow-400';
+            customer.element.style.backgroundColor = '#fef3c7';
+            customer.element.style.borderColor = '#f59e0b';
             
             // Timer de comer
-            const eatingInterval = setInterval(() => {
-                const currentCustomer = gameState.customers.find(c => c.id === customerId);
-                if (!currentCustomer || currentCustomer.status !== 'eating') {
-                    clearInterval(eatingInterval);
+            const eatingTimer = setInterval(() => {
+                const c = gameState.customers.find(c => c.id === customerId);
+                if (!c || c.status !== 'eating') {
+                    clearInterval(eatingTimer);
                     return;
                 }
                 
-                currentCustomer.eatingTimeLeft--;
-                const minutes = Math.floor(currentCustomer.eatingTimeLeft / 60);
-                const seconds = currentCustomer.eatingTimeLeft % 60;
-                const timerElement = document.getElementById(`eating-timer-${customerId}`);
-                
-                if (timerElement) {
-                    timerElement.textContent = `🍽️ ${minutes}:${seconds.toString().padStart(2, '0')}`;
+                c.eatingTimeLeft--;
+                const timer = document.getElementById(`eating-${customerId}`);
+                if (timer) {
+                    const min = Math.floor(c.eatingTimeLeft / 60);
+                    const sec = c.eatingTimeLeft % 60;
+                    timer.textContent = `🍽️ ${min}:${sec.toString().padStart(2, '0')}`;
                 }
                 
-                if (currentCustomer.eatingTimeLeft <= 0) {
-                    // Cliente terminou de comer - vai para o caixa
-                    currentCustomer.status = 'ready_to_pay';
-                    moveCustomerToCaixa(currentCustomer);
-                    clearInterval(eatingInterval);
+                if (c.eatingTimeLeft <= 0) {
+                    c.status = 'ready_to_pay';
+                    moveCustomerToCaixa(c);
+                    clearInterval(eatingTimer);
                 }
             }, 1000);
-        };
+        }
 
-        // Remover cliente manualmente
-        window.removeCustomer = function(customerId) {
-            removeCustomerById(customerId);
-        };
+        function removeCustomer(customerId) {
+            const customerIndex = gameState.customers.findIndex(c => c.id === customerId);
+            if (customerIndex !== -1) {
+                const customer = gameState.customers[customerIndex];
+                if (customer.element && customer.element.parentNode) {
+                    customer.element.remove();
+                }
+                gameState.customers.splice(customerIndex, 1);
+            }
+        }
 
         function removeCustomerById(customerId) {
             const customerIndex = gameState.customers.findIndex(c => c.id === customerId);
@@ -1042,17 +1058,26 @@
                     </div>
                     <div class="text-right">
                         <div class="text-green-600 font-bold">💰 ${customer.payment}</div>
-                        <button class="bg-blue-500 hover:bg-blue-600 text-white text-xs px-3 py-1 rounded-lg mt-1 transition-all" onclick="processPayment('${customer.id}', ${customer.payment})">COBRAR</button>
+                        <button class="payment-btn bg-blue-500 hover:bg-blue-600 text-white text-xs px-3 py-1 rounded-lg mt-1 transition-all" data-customer-id="${customer.id}" data-payment="${customer.payment}">COBRAR</button>
                     </div>
                 </div>
             `;
             
             document.getElementById('caixa-area').appendChild(caixaCustomerDiv);
             customer.caixaElement = caixaCustomerDiv;
+            
+            // Adicionar evento ao botão de pagamento usando onclick direto
+            const paymentBtn = caixaCustomerDiv.querySelector('.payment-btn');
+            paymentBtn.onclick = function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const customerId = this.dataset.customerId;
+                const payment = parseInt(this.dataset.payment);
+                processPayment(customerId, payment);
+            };
         }
 
-        // Processar pagamento
-        window.processPayment = function(customerId, amount) {
+        function processPayment(customerId, amount) {
             const customer = gameState.customers.find(c => c.id === customerId);
             if (!customer) return;
             
@@ -1066,13 +1091,16 @@
             }
             
             // Remover cliente da lista
-            removeCustomerById(customerId);
+            const customerIndex = gameState.customers.findIndex(c => c.id === customerId);
+            if (customerIndex !== -1) {
+                gameState.customers.splice(customerIndex, 1);
+            }
             
             // Feedback visual no caixa
             const caixaArea = document.getElementById('caixa-area');
-            caixaArea.classList.add('bg-green-200');
-            setTimeout(() => caixaArea.classList.remove('bg-green-200'), 300);
-        };
+            caixaArea.style.backgroundColor = '#bbf7d0';
+            setTimeout(() => caixaArea.style.backgroundColor = '', 300);
+        }
 
         // Botões Open/Closed
         openBtn.addEventListener('click', () => {
@@ -1914,5 +1942,5 @@
         updateQueijeiraDisplay();
         updateBancoDisplay();
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9720025bc06b007f',t:'MTc1NTY3MzE3OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'972019c6e7580098',t:'MTc1NTY3NDEzOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
